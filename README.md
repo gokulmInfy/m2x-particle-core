@@ -228,7 +228,9 @@ We provide a series of examples that will help you get an idea of how to use the
 
 Note that the examples contain fictionary variables, and that they need to be configured as per the instructions above before running on your Spark Core board. Each of the examples here also needs either a Wifi Shield or an Ethernet Shield hooked up to your device.
 
-In the `ExamplePost` a temperature sensor, a breadboard and 5 wires are also needed to get temperature data, you need to wire the board like the following: [![Wiring](/raw/master/docs/SparkCoreWiring.jpg)](/raw/master/docs/SparkCoreWiring.jpg)
+In the `ExamplePost` a temperature sensor, a breadboard and 5 wires are also needed to get temperature data, you need to wire the board like the following:
+
+[![Wiring](https://github.com/attm2x/m2x-spark-core/raw/master/docs/SparkCoreWiring.jpg)](docs/SparkCoreWiring.jpg)
 
 ExamplePost
 -------
