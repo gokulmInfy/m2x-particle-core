@@ -22,10 +22,10 @@ How to Install the library
   * Search for `jsonlite` and click the found library
   * Click `Include in App` and choose your current working Application
 
-2. M2X Library
+2. M2XStreamClient Library
 
   * In the [Spark Core IDE](https://www.spark.io/build), click the `Libraries` Icon
-  * Search for `m2x` and click the found library
+  * Search for `M2XStreamClient` and click the found library
   * Click `Include in App` and choose your current working Application
 
 3. Examples can be found by clicking on `m2x` under your Application's `Included Libraries` listing
@@ -245,17 +245,17 @@ This example shows how to post multiple values to multiple streams in one API ca
 ExampleFetchValues
 --------------
 
-This example reads stream values from M2X server. And prints the stream data point got to Serial interface. You can find the actual values in the Spark Core `Serial Monitor`.
+This example reads stream values from M2X server. And prints the stream data point got to the Serial interface.
 
 ExampleUpdateLocation
 -----------------
 
-This one sends location data to M2X server. Idealy a GPS device should be used here to read the cordinates, but for simplicity, we just use pre-set values here to show how to use the API.
+This one sends location data to M2X server. Idealy a GPS device should be used here to read the cordinates, but for simplicity we just use pre-set values here to show how to use the API.
 
 ExampleReadLocation
 ---------------
 
-This one reads location data of a feed from M2X server, and prints them to Serial interfact. You can check the output in the `Serial Monitor` of the Spark Core IDE.
+This one reads location data of a feed from M2X server and prints them to the Serial interface.
 
 LICENSE
 =======
