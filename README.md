@@ -28,9 +28,7 @@ How to Install the library
   * Search for `m2x` and click the found library
   * Click `Include in App` and choose your current working Application
 
-3. Examples can be founder by clicking on `m2x` under your Application's `Included Libraries` listing
-
-4. Enjoy coding!
+3. Examples can be found by clicking on `m2x` under your Application's `Included Libraries` listing
 
 Hardware Setup
 ==============
@@ -38,7 +36,7 @@ Hardware Setup
 Sensor Setup
 ------------
 
-Different sensors can be hooked up to an Spark Core board to provide different properties including temperatures, humidity, etc. You can use a breadboard as well as wires to connect different sensors to your Spark Core. For detailed tutorial on connecting different sensors, please refer to the Spark Core [Hackster](http://spark.hackster.io/) page.
+Different sensors can be hooked up to a Spark Core board to provide different properties including temperatures, humidity, etc. You can use a breadboard as well as wires to connect different sensors to your Spark Core. For a detailed tutorial on connecting different sensors, please refer to the Spark Core [Hackster](http://spark.hackster.io/) page.
 
 
 Variables used in Examples
@@ -56,7 +54,7 @@ char ssid[] = "<ssid>";
 char pass[] = "<WPA password>";
 ```
 
-Just fill in the SSID and password of the Wifi hotspot, you should be good to go.
+Just fill in the SSID and password of the Wifi hotspot and you should be good to go.
 
 For an Ethernet Shield, the following variables are needed:
 
@@ -65,7 +63,7 @@ byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 IPAddress ip(192,168,1,17);
 ```
 
-For a newer Ethernet Shield, the MAC address should be printed on a sticker on the shield. However, some sold Ethernet Shields have no MAC address shown on the board. In this case, you can use any MAC address, as long as it is not conflicted with another network device within the same LAN.
+For a newer Ethernet Shield, the MAC address should be printed on a sticker on the shield. However, some sold Ethernet Shields have no MAC address shown on the board. In this case, you can use any MAC address, as long as it does not conflict with another network device within the same LAN.
 
 The IP address here is only used when DHCP fails to give a valid IP address. It is recommended, though not required, to provide a unique IP address here.
 
@@ -74,7 +72,7 @@ M2X API Key
 
 Once you [register](https://m2x.att.com/signup) for an AT&amp;T M2X account, an API key is automatically generated for you. This key is called a _Primary Master Key_ and can be found in the _Master Keys_ tab of your [Account Settings](https://m2x.att.com/account). This key cannot be edited nor deleted, but it can be regenerated. It will give you full access to all APIs.
 
-However, you can also create a _Data Source API Key_ associated with a given Data Source(Feed), you can use the Data Source API key to access the streams belonging to that Data Source.
+However, you can also create a _Data Source API Key_ associated with a given Data Source (Feed). You can use the Data Source API key to access the streams belonging to that Data Source.
 
 You can customize this variable in the following line in the examples:
 
@@ -94,7 +92,7 @@ char feedId[] = "<feed id>";
 Stream Name
 ------------
 
-A stream in a feed is a set of timed series data of a specific type(i,e. humidity, temperature), you can use the M2XStreamClient library to send stream values to M2X server, or receive stream values from M2X server. Use the following line to configure the stream if needed:
+A stream in a feed is a set of time-series data points of a specific type (i.e. humidity, temperature). You can use the M2XStreamClient library to send stream values to the M2X API server, or receive stream values from the M2X API server. Use the following line to configure the stream if needed:
 
 ```
 char streamName[] = "<stream name>";
@@ -108,17 +106,17 @@ TCPClient client;
 M2XStreamClient m2xClient(&client, m2xKey);
 ```
 
-In the M2XStreamClient, 4 types of API functions are provided here:
+In the M2XStreamClient, four (4) types of API functions are provided:
 
-* `send`: Send stream value to M2X server
-* `receive`: Receive stream value from M2X server
-* `updateLocation`: Send location value of a feed to M2X server
-* `readLocation`: Receive location values of a feed from M2X server
+* `send`: Send stream value to M2X
+* `receive`: Receive stream value from M2X
+* `updateLocation`: Send location value of a feed to M2X
+* `readLocation`: Receive location values of a feed from M2X
 
 Returned values
 ---------------
 
-For all those functions, the HTTP status code will be returned if we can fulfill a HTTP request. For example, `200` will be returned upon success, `401` will be returned if we didn't provide a valid M2X API Key.
+For all those functions, the HTTP status code will be returned if we can fulfill an HTTP request. For example, `200` will be returned upon success, `401` will be returned if we didn't provide a valid M2X API Key.
 
 Otherwise, the following error codes will be used:
 
@@ -133,7 +131,7 @@ static const int E_JSON_INVALID = -5;
 Post stream value
 -----------------
 
-The following functions can be used to post value to a stream, which belongs to a feed:
+The following functions can be used to post a value to a stream, which belongs to a feed:
 
 ```
 template <class T>
@@ -154,12 +152,12 @@ int postMultiple(const char* feedId, int streamNum,
                  const char* ats[], T values[]);
 ```
 
-Please refer to the comments in the source code on how to use this function, basically, you need to provide the list of streams you want to post to, and values for each stream.
+Please refer to the comments in the source code on how to use this function. Essentially, you will need to provide the list of streams you want to post to, and values for each stream.
 
 Fetch stream value
 ------------------
 
-Since Spark Core board contains very limited memory, we cannot put the whole returned string in memory, parse it into JSON representations and read what we want. Instead, we use a callback-based mechanism here. We parse the returned JSON string piece by piece, whenever we got a new stream value point, we will call the following callback functions:
+Since Spark Core boards contain very limited memory, we cannot put the whole returned string in memory, parse it into JSON representations and read what we want. Instead, we use a callback-based mechanism here. We parse the returned JSON string piece by piece. Whenever we got a new stream value point, we will call the following callback functions:
 
 ```
 void (*stream_value_read_callback)(const char* at,
@@ -169,9 +167,9 @@ void (*stream_value_read_callback)(const char* at,
 
 ```
 
-The implementation of the callback function is left for the user to fill in, you can read the value of the point in the `value` argument, and the timestamp of the point in the `at` argument. We even pass the index of this this data point in the whole stream as well as a user-specified context variable to this function, so as you can perform different tasks on this.
+The implementation of the callback function is left for the user to fill in, you can read the value of the point in the `value` argument, and the timestamp of the point in the `at` argument. We even pass the index of this data point in the whole stream as well as a user-specified context variable to this function, so that you can perform different tasks.
 
-To read the stream values, all you need to do is calling this function:
+To read the stream values, all you need to do is call this function:
 
 ```
 int fetchValues(const char* feedId, const char* streamName,
@@ -180,7 +178,7 @@ int fetchValues(const char* feedId, const char* streamName,
                 const char* limit = NULL);
 ```
 
-Besides the feed ID and stream name, only the callback function and a user context needs to be specified. Optional filtering parameters such as start time, end time and limits per call can also be used here.
+Besides the feed ID and stream name, only the callback function and a user context needs to be specified. Optional filtering parameters such as start time, end time, and limits per call can also be used here.
 
 Update Datasource Location
 --------------------------
@@ -195,7 +193,7 @@ int updateLocation(const char* feedId, const char* name,
 
 Different from stream values, locations are attached to feeds rather than streams.
 
-The reasons we are providing templated function is due to floating point value precision: on most Spark Core boards, `double` is the same as `float`, i.e., 32-bit (4-byte) single precision floating number. That means only 7 digits in the number is reliable. When we are using `double` here to represent latitude/longitude, it means only 5 digits after the floating point is accurate, which means we can represent as accurate to ~1.1132m distance using `double` here. If you want to represent cordinates that are more specific, you need to use strings here.
+The reasons we are providing templated functions is due to floating point value precision: on most Spark Core boards, `double` is the same as `float`, i.e., a 32-bit (4-byte) single precision floating number. That means only 7 digits in the number are reliable. When we are using `double` here to represent latitude/longitude, it means that only 5 digits after the floating point is accurate, which means we can represent as accurate to ~1.1132m distance using `double` here. If you want to represent cordinates that are more specific, you need to use strings here.
 
 Read Datasource Location
 ------------------------
@@ -213,7 +211,7 @@ void (*location_read_callback)(const char* name,
 
 ```
 
-For memory space consideration, now we only provide double-precision when reading locations. An index of the location points is also provided here together with a user-specified context.
+For memory space consideration, we only provide double-precision when reading locations. An index of the location points is also provided here together with a user-specified context.
 
 The API is also slightly different, in that the stream name is not needed here:
 
