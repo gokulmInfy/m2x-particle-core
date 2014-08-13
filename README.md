@@ -1,4 +1,4 @@
-Spark Core M2X API Client
+Spark Core M2X API Client (Beta)
 =====================
 
 The Spark Core library is used to send/receive data to/from [AT&amp;T's M2X service](https://m2x.att.com/) from the [Spark Core](https://www.spark.io/).
