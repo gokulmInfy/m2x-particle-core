@@ -28,10 +28,15 @@ How to Install the library
   * Search for `M2XStreamClient` and click the found library
   * Click `Include in App` and choose your current working Application
 
-3. Examples can be found by clicking on `m2x` under your Application's `Included Libraries` listing
+3. Examples can be found by clicking on `M2XStreamClient` under your Application's `Included Libraries` listing
 
 Hardware Setup
 ==============
+
+Board Setup
+-----------
+
+The Spark Core website has a very good [tutorial](http://docs.spark.io/#getting-started) on getting the Spark Core setup and connected to wifi.
 
 Sensor Setup
 ------------
