@@ -9,7 +9,7 @@ Getting Started
 2. Obtain your _Master Key_ from the Master Keys tab of your [Account Settings](https://m2x.att.com/account) screen.
 3. Create your first [Data Source Blueprint](https://m2x.att.com/blueprints) and copy its _Feed ID_.
 4. Review the [M2X API Documentation](https://m2x.att.com/developer/documentation/overview).
-5. Obtain an Spark Core and [set it up](http://docs.spark.io/start/).
+5. Obtain a Spark Core and [set it up](http://docs.spark.io/start/).
 
 Please consult the [M2X glossary](https://m2x.att.com/developer/documentation/glossary) if you have questions about any M2X specific terms.
 
@@ -121,7 +121,7 @@ In the M2XStreamClient, four (4) types of API functions are provided:
 Returned values
 ---------------
 
-For all those functions, the HTTP status code will be returned if we can fulfill an HTTP request. For example, `200` will be returned upon success, `401` will be returned if we didn't provide a valid M2X API Key.
+For all those functions, the HTTP status code will be returned if we can fulfill an HTTP request. For example, `200` will be returned upon success, and `401` will be returned if we didn't provide a valid M2X API Key. A full-list of error codes can be found here: [M2X API Error Codes] (https://m2x.att.com/developer/documentation/overview#Client-Errors)
 
 Otherwise, the following error codes will be used:
 
@@ -143,12 +143,12 @@ template <class T>
 int post(const char* feedId, const char* streamName, T value);
 ```
 
-Here we use C++ templates to generate functions for different types of values, feel free to use values of `float`, `int`, `long` or even `const char*` types here.
+Here we use C++ templates to generate functions for different types of values. Feel free to use values of `float`, `int`, `long` or even `const char*` types here.
 
 Post multiple values
 --------------------
 
-M2X also supports posting multiple values to multiple streams in one call, use the following function for this:
+M2X also supports posting multiple values to multiple streams in one call. Use the following function to do this:
 
 ```
 template <class T>
@@ -188,7 +188,7 @@ Besides the feed ID and stream name, only the callback function and a user conte
 Update Datasource Location
 --------------------------
 
-You can use the following function to update the location for a data source(feed):
+You can use the following function to update the location for a data source (feed):
 
 ```
 template <class T>
@@ -240,27 +240,27 @@ In the `ExamplePost` a temperature sensor, a breadboard and 5 wires are also nee
 ExamplePost
 -------
 
-This example shows how to post temperatures to M2X server.
+This example shows how to post temperatures to M2X.
 
 ExamplePostMultiple
 ---------------
 
-This example shows how to post multiple values to multiple streams in one API call.
+This example shows how to post multiple values to multiple streams in M2X in one API call.
 
 ExampleFetchValues
 --------------
 
-This example reads stream values from M2X server. And prints the stream data point got to the Serial interface.
+This example reads stream values from M2X and prints the stream data point it got to the Serial interface.
 
 ExampleUpdateLocation
 -----------------
 
-This one sends location data to M2X server. Idealy a GPS device should be used here to read the cordinates, but for simplicity we just use pre-set values here to show how to use the API.
+This example sends location data to M2X. Ideally a GPS device should be used here to read the cordinates, but for simplicity we just use pre-set values here to show how to use the API method.
 
 ExampleReadLocation
 ---------------
 
-This one reads location data of a feed from M2X server and prints them to the Serial interface.
+This example reads location data of a feed from M2X and prints them to the Serial interface.
 
 LICENSE
 =======
