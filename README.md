@@ -121,7 +121,7 @@ In the M2XStreamClient, four (4) types of API functions are provided:
 Returned values
 ---------------
 
-For all those functions, the HTTP status code will be returned if we can fulfill an HTTP request. For example, `200` will be returned upon success, and `401` will be returned if we didn't provide a valid M2X API Key. A full-list of error codes can be found here: [M2X API Error Codes] (https://m2x.att.com/developer/documentation/overview#Client-Errors)
+For all those functions, the HTTP status code will be returned if we can fulfill an HTTP request. For example, `200` will be returned upon success, and `401` will be returned if we didn't provide a valid M2X API Key. A full-list of M2X API error codes can be found here: [M2X API Error Codes] (https://m2x.att.com/developer/documentation/overview#Client-Errors)
 
 Otherwise, the following error codes will be used:
 
@@ -148,7 +148,7 @@ Here we use C++ templates to generate functions for different types of values. F
 Post multiple values
 --------------------
 
-M2X also supports posting multiple values to multiple streams in one call. Use the following function to do this:
+M2X also supports posting multiple values to multiple streams in one call. To do so, use the following function:
 
 ```
 template <class T>
@@ -157,7 +157,7 @@ int postMultiple(const char* feedId, int streamNum,
                  const char* ats[], T values[]);
 ```
 
-Please refer to the comments in the source code on how to use this function. Essentially, you will need to provide the list of streams you want to post to, and values for each stream.
+Please refer to the comments in the source code for additional information on how to use this function. Essentially, you will need to provide the list of streams you want to post to, and values for each stream.
 
 Fetch stream value
 ------------------
@@ -198,12 +198,12 @@ int updateLocation(const char* feedId, const char* name,
 
 Different from stream values, locations are attached to feeds rather than streams.
 
-The reasons we are providing templated functions is due to floating point value precision: on most Spark Core boards, `double` is the same as `float`, i.e., a 32-bit (4-byte) single precision floating number. That means only 7 digits in the number are reliable. When we are using `double` here to represent latitude/longitude, it means that only 5 digits after the floating point is accurate, which means we can represent as accurate to ~1.1132m distance using `double` here. If you want to represent cordinates that are more specific, you need to use strings here.
+The reason we are providing templated functions is due to floating point value precision: on most Spark Core boards, `double` is the same as `float`, i.e., a 32-bit (4-byte) single precision floating number. That means only 7 digits in the number are reliable. When we are using `double` here to represent latitude/longitude, it means that only 5 digits after the floating point are accurate, which means we can represent as accurate to ~1.1132m distance using `double` here. If you want to represent coordinates that are more specific, you need to use strings here.
 
 Read Datasource Location
 ------------------------
 
-Similar to reading stream values, we also use callback functions here. The only difference is that different parameters are used in the function:
+Similar to reading stream values, we also use callback functions to read datasource locations. The only difference is that different parameters are used in the function:
 
 ```
 void (*location_read_callback)(const char* name,
@@ -255,7 +255,7 @@ This example reads stream values from M2X and prints the stream data point it go
 ExampleUpdateLocation
 -----------------
 
-This example sends location data to M2X. Ideally a GPS device should be used here to read the cordinates, but for simplicity we just use pre-set values here to show how to use the API method.
+This example sends location data to M2X. Ideally a GPS device should be used here to read the coordinates, but for simplicity we just use pre-set values here to show how to use the API method.
 
 ExampleReadLocation
 ---------------
