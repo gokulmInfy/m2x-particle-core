@@ -1070,7 +1070,7 @@ hex:
     if ((utf32 & 0x0FFFFu) >= 0x0FFFEu)         token.type.string = (jsonlite_string_type)(token.type.string | jsonlite_string_unicode_noncharacter);
     goto next_char;
 utf8:
-    token.type.string |= jsonlite_string_utf8;
+    token.type.string = (jsonlite_string_type)(token.type.string | jsonlite_string_utf8);
     res = jsonlite_clz((unsigned int)((*c) ^ 0xFF) << 0x19);
     utf32 = (*c & (0xFF >> (res + 1)));
     value = 0xAAAAAAAA; // == 1010...
@@ -1272,7 +1272,7 @@ jsonlite_stream jsonlite_mem_stream_init(size_t block_size) {
     stream->write = jsonlite_mem_stream_write;
     stream->release = jsonlite_mem_stream_release;
 
-    jsonlite_mem_stream_block *first = malloc(sizeof(jsonlite_mem_stream_block) + block_size);
+    jsonlite_mem_stream_block *first = (jsonlite_mem_stream_block*)malloc(sizeof(jsonlite_mem_stream_block) + block_size);
     first->data = (uint8_t *)first + sizeof(jsonlite_mem_stream_block);
     first->next = NULL;
 
@@ -1344,7 +1344,7 @@ static int jsonlite_static_mem_stream_write(jsonlite_stream stream, const void *
 
 jsonlite_stream jsonlite_static_mem_stream_init(void *buffer, size_t size) {
     size_t s = SIZE_OF_STATIC_MEM_STREAM();
-    struct jsonlite_stream_struct *stream = (jsonlite_stream_struct*)malloc(s);
+    struct jsonlite_stream_struct *stream = (struct jsonlite_stream_struct*)malloc(s);
     stream->write = jsonlite_static_mem_stream_write;
     stream->release = jsonlite_stream_free_mem;
 
@@ -1375,7 +1375,7 @@ static int jsonlite_file_stream_write(jsonlite_stream stream, const void *data, 
 
 jsonlite_stream jsonlite_file_stream_init(FILE *file) {
     size_t size = SIZE_OF_FILE_STREAM();
-    struct jsonlite_stream_struct *stream = (jsonlite_stream_struct*)malloc(size);
+    struct jsonlite_stream_struct *stream = (struct jsonlite_stream_struct*)malloc(size);
     stream->write = jsonlite_file_stream_write;
     stream->release = jsonlite_stream_free_mem;
 
@@ -1620,7 +1620,8 @@ size_t jsonlite_token_base64_to_binary(jsonlite_token *ts, void **buffer) {
     uint8_t *c;
     size_t bytes, i;
     if (size > 0) {
-        c = (uint8_t*)*buffer = (uint16_t *)malloc(size);
+        *buffer = malloc(size);
+        c = (uint8_t*)*buffer;
     } else {
         *buffer = NULL;
         goto error;
