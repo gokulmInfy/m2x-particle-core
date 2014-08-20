@@ -5,7 +5,7 @@
 
 #define USER_AGENT "User-Agent: M2X Spark Core Client/0.1"
 
-#include "Client.h"
+#include "application.h"
 #include "NullPrint.h"
 
 #ifdef DEBUG
