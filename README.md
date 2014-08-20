@@ -16,19 +16,13 @@ Please consult the [M2X glossary](https://m2x.att.com/developer/documentation/gl
 How to Install the library
 ==========================
 
-1. Dependency [jsonlite](https://github.com/citrusbyte/jsonlite-sparkcore)
-
-  * In the [Spark Core IDE](https://www.spark.io/build), click the `Libraries` Icon
-  * Search for `jsonlite` and click the found library
-  * Click `Include in App` and choose your current working Application
-
-2. M2XStreamClient Library
+1. M2XStreamClient Library
 
   * In the [Spark Core IDE](https://www.spark.io/build), click the `Libraries` Icon
   * Search for `M2XStreamClient` and click the found library
   * Click `Include in App` and choose your current working Application
 
-3. Examples can be found by clicking on `M2XStreamClient` under your Application's `Included Libraries` listing
+2. Examples can be found by clicking on `M2XStreamClient` under your Application's `Included Libraries` listing
 
 Hardware Setup
 ==============
