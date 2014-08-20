@@ -1,5 +1,5 @@
 //
-//  Copyright 2012-2014, Andrii Mamchur
+//  Copyright 2012-2013, Andrii Mamchur
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -16,68 +16,9 @@
 #ifndef JSONLITE_H
 #define JSONLITE_H
 
-// #include "jsonlite_buffer.h"
-//
-//  Copyright 2012-2014, Andrii Mamchur
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//  http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License
-
-#ifndef JSONLITE_BUFFER_H
-#define JSONLITE_BUFFER_H
-
-#include <stdint.h>
-#include <stdlib.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-    typedef struct jsonlite_buffer_struct *jsonlite_buffer;
-    typedef int (*jsonlite_buffer_mem_fn)(jsonlite_buffer buffer, const void *data, size_t length);
-    typedef const void * (*jsonlite_buffer_data_fn)(jsonlite_buffer buffer);
-
-    struct jsonlite_buffer_struct {
-        uint8_t *mem;
-        size_t size;
-        size_t capacity;
-
-        jsonlite_buffer_mem_fn set_mem;
-        jsonlite_buffer_mem_fn append_mem;
-    } jsonlite_buffer_struct;
-
-    int jsonlite_buffer_set_mem(jsonlite_buffer buffer, const void *data, size_t length);
-    int jsonlite_buffer_append_mem(jsonlite_buffer buffer, const void *data, size_t length);
-    const void *jsonlite_buffer_data(jsonlite_buffer buffer);
-    size_t jsonlite_buffer_size(jsonlite_buffer buffer);
-
-    #define jsonlite_static_buffer_size() (sizeof(jsonlite_buffer_struct))
-    jsonlite_buffer jsonlite_static_buffer_init(void *mem, size_t size);
-
-    #define jsonlite_heap_buffer_size() (sizeof(jsonlite_buffer_struct))
-    jsonlite_buffer jsonlite_heap_buffer_init(void *mem);
-    void jsonlite_heap_buffer_cleanup(jsonlite_buffer buffer);
-
-    extern jsonlite_buffer jsonlite_null_buffer;
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif
-
 // #include "jsonlite_builder.h"
 //
-//  Copyright 2012-2014, Andrii Mamchur
+//  Copyright 2012-2013, Andrii Mamchur
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -97,7 +38,7 @@ extern "C" {
 #include <stdio.h>
 // #include "jsonlite_types.h"
 //
-//  Copyright 2012-2014, Andrii Mamchur
+//  Copyright 2012-2013, Andrii Mamchur
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -119,6 +60,7 @@ typedef enum {
     jsonlite_result_ok,
     jsonlite_result_end_of_stream,
     jsonlite_result_depth_limit,
+    jsonlite_result_invalid_argument,
     jsonlite_result_expected_object_or_array,
     jsonlite_result_expected_value,
     jsonlite_result_expected_key_or_end,
@@ -131,8 +73,7 @@ typedef enum {
     jsonlite_result_invalid_utf8,
     jsonlite_result_suspended,
 
-    jsonlite_result_not_allowed,
-    jsonlite_result_out_of_memory,
+    jsonlite_result_not_allowed
 } jsonlite_result;
 
 
@@ -140,7 +81,7 @@ typedef enum {
 
 // #include "jsonlite_stream.h"
 //
-//  Copyright 2012-2014, Andrii Mamchur
+//  Copyright 2012-2013, Andrii Mamchur
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -157,9 +98,8 @@ typedef enum {
 #ifndef JSONLITE_STREAM_H
 #define JSONLITE_STREAM_H
 
-#include <stdint.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -167,47 +107,20 @@ extern "C" {
 
     struct jsonlite_stream_struct;
     typedef struct jsonlite_stream_struct const * jsonlite_stream;
-    typedef int (*jsonlite_stream_write_fn)(jsonlite_stream stream, const void *data, size_t length);
 
-    struct jsonlite_stream_struct {
-        jsonlite_stream_write_fn write;
-    } jsonlite_stream_struct;
+    typedef int (*jsonlite_stream_write_fn)(jsonlite_stream stream, const void *data, size_t length);
+    typedef void (*jsonlite_stream_release_fn)(jsonlite_stream stream);
 
     int jsonlite_stream_write(jsonlite_stream stream, const void *data, size_t length);
+    void jsonlite_stream_release(jsonlite_stream stream);
 
-    typedef struct jsonlite_mem_stream_block {
-        struct jsonlite_mem_stream_block *next;
-        uint8_t *data;
-    } jsonlite_mem_stream_block;
-
-    typedef struct jsonlite_mem_stream {
-        size_t block_size;
-        uint8_t *cursor;
-        uint8_t *limit;
-        struct jsonlite_mem_stream_block *current;
-        struct jsonlite_mem_stream_block *first;
-    } jsonlite_mem_stream;
-
-    jsonlite_stream jsonlite_mem_stream_alloc(size_t block_size);
-    void jsonlite_mem_stream_free(jsonlite_stream stream);
+    jsonlite_stream jsonlite_mem_stream_init(size_t block_size);
     size_t jsonlite_mem_stream_data(jsonlite_stream stream, uint8_t **data, size_t extra_bytes);
-
-    typedef struct jsonlite_static_mem_stream {
-        uint8_t *buffer;
-        size_t size;
-        size_t written;
-        uint8_t *limit;
-        int enabled;
-    } jsonlite_static_mem_stream;
-
-    #define jsonlite_static_mem_stream_size() (sizeof(jsonlite_stream_struct) + sizeof(jsonlite_static_mem_stream))
 
     jsonlite_stream jsonlite_static_mem_stream_init(void *buffer, size_t size);
     size_t jsonlite_static_mem_stream_written_bytes(jsonlite_stream stream);
-    const void * jsonlite_static_mem_stream_data(jsonlite_stream stream);
 
-    jsonlite_stream jsonlite_file_stream_alloc(FILE *file);
-    void jsonlite_file_stream_free(jsonlite_stream stream);
+    jsonlite_stream jsonlite_file_stream_init(FILE *file);
 
     extern jsonlite_stream jsonlite_null_stream;
     extern jsonlite_stream jsonlite_stdout_stream;
@@ -225,20 +138,26 @@ extern "C" {
 
     struct jsonlite_builder_struct;
     typedef struct jsonlite_builder_struct* jsonlite_builder;
-    typedef uint16_t jsonlite_write_state;
-    typedef struct jsonlite_builder_struct {
-        jsonlite_write_state *state;
-        jsonlite_write_state *limit;
-        jsonlite_write_state *stack;
-        jsonlite_stream stream;
 
-        size_t indentation;
-        char doubleFormat[8];
-    } jsonlite_builder_struct;
+    /** @brief Creates and initializes new instance of builder object.
+     *
+     * You should release jsonlite_builder object using ::jsonlite_builder_release.
+     * @see jsonlite_builder
+     * @see jsonlite_builder_release
+     * @param depth the builder depth
+     * @return jsonlite_builder object
+     */
+    jsonlite_builder jsonlite_builder_init(size_t depth, jsonlite_stream stream);
 
-    #define jsonlite_builder_estimate_size(depth) (sizeof(jsonlite_builder_struct) + (depth) * sizeof(jsonlite_write_state))
-
-    jsonlite_builder jsonlite_builder_init(void *memory, size_t size, jsonlite_stream stream);
+    /** \brief Releases builder object.
+     *
+     * If builder is NULL, jsonlite_builder_release does nothing.
+     * @see jsonlite_builder
+     * @see jsonlite_result
+     * @param builder the builder object
+     * @return jsonlite_result_invalid_argument when builder is NULL; otherwise jsonlite_result_ok.
+     */
+    jsonlite_result jsonlite_builder_release(jsonlite_builder builder);
 
     /** \brief Sets beautify indentation. Default is 0.
      *
@@ -246,8 +165,9 @@ extern "C" {
      * @see jsonlite_result
      * @param builder the builder object
      * @param indentation the beautify indentation; 0 - disabled
+     * @return jsonlite_result_invalid_argument when builder is NULL; otherwise jsonlite_result_ok.
      */
-    void jsonlite_builder_set_indentation(jsonlite_builder builder, size_t indentation);
+    jsonlite_result jsonlite_builder_set_indentation(jsonlite_builder builder, size_t indentation);
 
     /** \brief Sets format for double values. Default is "%.16g".
      *
@@ -256,15 +176,17 @@ extern "C" {
      * @see jsonlite_result
      * @param builder the builder object
      * @param format the double format; see sprintf function for details
+     * @return jsonlite_result_invalid_argument when builder or format are NULL; otherwise jsonlite_result_ok.
      */
-    void jsonlite_builder_set_double_format(jsonlite_builder builder, const char *format);
+    jsonlite_result jsonlite_builder_set_double_format(jsonlite_builder builder, const char *format);
 
     /** \brief Begin JSON object.
      *
      * @see jsonlite_builder
      * @see jsonlite_result
      * @param builder the builder object
-     * @return jsonlite_result_not_allowed when operation is not allowed;
+     * @return jsonlite_result_invalid_argument when builder is NULL;
+     * jsonlite_result_not_allowed when operation is not allowed;
      * otherwise jsonlite_result_ok.
      */
     jsonlite_result jsonlite_builder_object_begin(jsonlite_builder builder);
@@ -274,7 +196,8 @@ extern "C" {
      * @see jsonlite_builder
      * @see jsonlite_result
      * @param builder the builder object
-     * @return jsonlite_result_not_allowed when operation is not allowed;
+     * @return jsonlite_result_invalid_argument when builder is NULL;
+     * jsonlite_result_not_allowed when operation is not allowed;
      * otherwise jsonlite_result_ok.
      */
     jsonlite_result jsonlite_builder_object_end(jsonlite_builder builder);
@@ -284,7 +207,8 @@ extern "C" {
      * @see jsonlite_builder
      * @see jsonlite_result
      * @param builder the builder object
-     * @return jsonlite_result_not_allowed when operation is not allowed;
+     * @return jsonlite_result_invalid_argument when builder is NULL;
+     * jsonlite_result_not_allowed when operation is not allowed;
      * otherwise jsonlite_result_ok.
      */
     jsonlite_result jsonlite_builder_array_begin(jsonlite_builder builder);
@@ -294,7 +218,8 @@ extern "C" {
      * @see jsonlite_builder
      * @see jsonlite_result
      * @param builder the builder object
-     * @return jsonlite_result_not_allowed when operation is not allowed;
+     * @return jsonlite_result_invalid_argument when builder is NULL;
+     * jsonlite_result_not_allowed when operation is not allowed;
      * otherwise jsonlite_result_ok.
      */
     jsonlite_result jsonlite_builder_array_end(jsonlite_builder builder);
@@ -308,7 +233,8 @@ extern "C" {
      * @param builder the builder object
      * @param data the UTF-8 encoded string
      * @param length the string length
-     * @return jsonlite_result_not_allowed when operation is not allowed;
+     * @return jsonlite_result_invalid_argument when builder or data are NULL;
+     * jsonlite_result_not_allowed when operation is not allowed;
      * otherwise jsonlite_result_ok.
      */
     jsonlite_result jsonlite_builder_key(jsonlite_builder builder, const char *data, size_t length);
@@ -322,7 +248,8 @@ extern "C" {
      * @param builder the builder object
      * @param data the UTF-8 encoded string
      * @param length the string length
-     * @return jsonlite_result_not_allowed when operation is not allowed;
+     * @return jsonlite_result_invalid_argument when builder or data are NULL;
+     * jsonlite_result_not_allowed when operation is not allowed;
      * otherwise jsonlite_result_ok.
      */
     jsonlite_result jsonlite_builder_string(jsonlite_builder builder, const char *data, size_t length);
@@ -333,7 +260,8 @@ extern "C" {
      * @see jsonlite_result
      * @param builder the builder object
      * @param value the integer value
-     * @return jsonlite_result_not_allowed when operation is not allowed;
+     * @return jsonlite_result_invalid_argument when builder is NULL;
+     * jsonlite_result_not_allowed when operation is not allowed;
      * otherwise jsonlite_result_ok.
      */
     jsonlite_result jsonlite_builder_int(jsonlite_builder builder, long long value);
@@ -344,7 +272,8 @@ extern "C" {
      * @see jsonlite_result
      * @param builder the builder object
      * @param value the double value
-     * @return jsonlite_result_not_allowed when operation is not allowed;
+     * @return jsonlite_result_invalid_argument when builder is NULL;
+     * jsonlite_result_not_allowed when operation is not allowed;
      * otherwise jsonlite_result_ok.
      */
     jsonlite_result jsonlite_builder_double(jsonlite_builder builder, double value);
@@ -354,7 +283,8 @@ extern "C" {
      * @see jsonlite_builder
      * @see jsonlite_result
      * @param builder the builder object
-     * @return jsonlite_result_not_allowed when operation is not allowed;
+     * @return jsonlite_result_invalid_argument when builder is NULL;
+     * jsonlite_result_not_allowed when operation is not allowed;
      * otherwise jsonlite_result_ok.
      */
     jsonlite_result jsonlite_builder_true(jsonlite_builder builder);
@@ -364,7 +294,8 @@ extern "C" {
      * @see jsonlite_builder
      * @see jsonlite_result
      * @param builder the builder object
-     * @return jsonlite_result_not_allowed when operation is not allowed;
+     * @return jsonlite_result_invalid_argument when builder is NULL;
+     * jsonlite_result_not_allowed when operation is not allowed;
      * otherwise jsonlite_result_ok.
      */
     jsonlite_result jsonlite_builder_false(jsonlite_builder builder);
@@ -374,7 +305,8 @@ extern "C" {
      * @see jsonlite_builder
      * @see jsonlite_result
      * @param builder the builder object
-     * @return jsonlite_result_not_allowed when operation is not allowed;
+     * @return jsonlite_result_invalid_argument when builder is NULL;
+     * jsonlite_result_not_allowed when operation is not allowed;
      * otherwise jsonlite_result_ok.
      */
     jsonlite_result jsonlite_builder_null(jsonlite_builder builder);
@@ -389,7 +321,8 @@ extern "C" {
      * @param builder the builder object
      * @param data the raw data
      * @param length the data length
-     * @return jsonlite_result_not_allowed when operation is not allowed;
+     * @return jsonlite_result_invalid_argument when builder or data are NULL;
+     * jsonlite_result_not_allowed when operation is not allowed;
      * otherwise jsonlite_result_ok.
      */
     jsonlite_result jsonlite_builder_raw_key(jsonlite_builder builder, const void *data, size_t length);
@@ -404,7 +337,8 @@ extern "C" {
      * @param builder the builder object
      * @param data the raw data
      * @param length the data length
-     * @return jsonlite_result_not_allowed when operation is not allowed;
+     * @return jsonlite_result_invalid_argument when builder or data are NULL;
+     * jsonlite_result_not_allowed when operation is not allowed;
      * otherwise jsonlite_result_ok.
      */
     jsonlite_result jsonlite_builder_raw_string(jsonlite_builder builder, const void *data, size_t length);
@@ -418,7 +352,8 @@ extern "C" {
      * @param builder the builder object
      * @param data the raw data
      * @param length the data length
-     * @return jsonlite_result_not_allowed when operation is not allowed;
+     * @return jsonlite_result_invalid_argument when builder or data are NULL;
+     * jsonlite_result_not_allowed when operation is not allowed;
      * otherwise jsonlite_result_ok.
      */
     jsonlite_result jsonlite_builder_raw_value(jsonlite_builder builder, const void *data, size_t length);
@@ -433,7 +368,7 @@ extern "C" {
 
 // #include "jsonlite_parser.h"
 //
-//  Copyright 2012-2014, Andrii Mamchur
+//  Copyright 2012-2013, Andrii Mamchur
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -450,11 +385,12 @@ extern "C" {
 #ifndef JSONLITE_PARSER_H
 #define JSONLITE_PARSER_H
 
+#include <stdio.h>
 #include <stddef.h>
 #include <stdint.h>
 // #include "jsonlite_token.h"
 //
-//  Copyright 2012-2014, Andrii Mamchur
+//  Copyright 2012-2013, Andrii Mamchur
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -471,6 +407,7 @@ extern "C" {
 #ifndef JSONLITE_TOKEN_H
 #define JSONLITE_TOKEN_H
 
+#include <stdio.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -626,7 +563,7 @@ extern "C" {
      * @param ts jsonlite token
      * @return length in bytes  of converted string.
      */
-    size_t jsonlite_token_to_uft8(jsonlite_token *ts, uint8_t *buffer);
+    size_t jsonlite_token_to_uft8(jsonlite_token *ts, uint8_t **buffer);
 
     /** @brief Returns a size of memory that is required for token conversion to UTF-16 string.
      * @param ts jsonlite token
@@ -643,10 +580,10 @@ extern "C" {
      * @param ts jsonlite token
      * @return length in bytes of converted string.
      */
-    size_t jsonlite_token_to_uft16(jsonlite_token *ts, uint16_t *buffer);
+    size_t jsonlite_token_to_uft16(jsonlite_token *ts, uint16_t **buffer);
 
     size_t jsonlite_token_size_of_base64_binary(jsonlite_token *ts);
-    size_t jsonlite_token_base64_to_binary(jsonlite_token *ts, void *buffer);
+    size_t jsonlite_token_base64_to_binary(jsonlite_token *ts, void **buffer);
 
     long jsonlite_token_to_long(jsonlite_token *token);
     long long jsonlite_token_to_long_long(jsonlite_token *token);
@@ -658,8 +595,6 @@ extern "C" {
 #endif
 
 // #include "jsonlite_types.h"
-
-// #include "jsonlite_buffer.h"
 
 
 #ifdef __cplusplus
@@ -746,31 +681,34 @@ extern "C" {
         jsonlite_callback_context context;
     } jsonlite_parser_callbacks;
 
-    typedef uint8_t parse_state;
-    struct jsonlite_parser_struct {
-        const uint8_t *cursor;
-        const uint8_t *limit;
-        const uint8_t *buffer;
+    /** @brief Estimates memory usage.
+     * @note
+     * This value depends on CPU architectures.
+     * @param depth the parsing depth.
+     * @return Estimated size in bytes.
+     */
+    size_t jsonlite_parser_estimate_size(size_t depth);
 
-        jsonlite_buffer rest_buffer;
-
-        parse_state *current;
-        parse_state *last;
-        parse_state **control;
-
-        jsonlite_result result;
-        jsonlite_parser_callbacks callbacks;
-    } jsonlite_parser_struct;
+    /** @brief Creates and initializes new instance of parser object.
+     *
+     * You should release jsonlite_parser object using ::jsonlite_parser_release.
+     * @see jsonlite_parser
+     * @see jsonlite_parser_release
+     * @param depth the parsing depth.
+     * @return jsonlite_parser object.
+     */
+    jsonlite_parser jsonlite_parser_init(size_t depth);
 
     /** @brief Initializes memory for parser object.
      *
+     * You should release internal resources using ::jsonlite_parser_cleanup
      * @see jsonlite_parser
      * @see jsonlite_parser_reset
      * @param memory the memory for parser.
      * @param size the memory size.
      * @return jsonlite_parser object.
      */
-    jsonlite_parser jsonlite_parser_init(void *memory, size_t size, jsonlite_buffer rest_buffer);
+    jsonlite_parser jsonlite_parser_init_memory(void *memory, size_t size);
 
     /** \brief Copies provided callbacks structure to parser object.
      * @see jsonlite_parser
@@ -778,14 +716,15 @@ extern "C" {
      * @see jsonlite_result
      * @param parser the parser object.
      * @param parser the callbacks object.
+     * @return jsonlite_result_invalid_argument when parser or cbs are NULL; otherwise jsonlite_result_ok.
      */
-    void jsonlite_parser_set_callback(jsonlite_parser parser, const jsonlite_parser_callbacks *cbs);
+    jsonlite_result jsonlite_parser_set_callback(jsonlite_parser parser, const jsonlite_parser_callbacks *cbs);
 
     /** \brief Returns result of last operation.
      * @see jsonlite_parser
      * @see jsonlite_result
      * @param parser the parser object.
-     * @return Result of last operation.
+     * @return jsonlite_result_invalid_argument when parser is NULL; otherwise s result of last operation.
      */
     jsonlite_result jsonlite_parser_get_result(jsonlite_parser parser);
 
@@ -797,7 +736,31 @@ extern "C" {
      * @param parser the parser object.
      * @param buffer the pointer to JSON payload buffer.
      * @param size the JSON payload buffer size.
-     * @return JSON parsing result.
+     * @return JSON parsing result or jsonlite_result_invalid_argument when some parameter is invalid.
+     *
+     * There is an example of JSON validation
+     * @code{.c}
+     * char json[] = "{\"key\" : 12345, \"obj\": {}, \"array\":[null, true, false, \"string\"]}";
+     * jsonlite_parser p = jsonlite_parser_init(16);
+     * jsonlite_result result = jsonlite_parser_tokenize(p, json, sizeof(json));
+     * assert(result == jsonlite_result_ok);
+     * jsonlite_parser_release(p);
+     * @endcode
+     *
+     * There is an another example of JSON chunk parsing.
+     * @code{.c}
+     * char chunk1[] = "{\"key\" : 12345, \"obj\": {}, \"arr";
+     * char chunk2[] = "ay\":[null, true, false, \"string\"]}";
+     * jsonlite_parser p = jsonlite_parser_init(16);
+     *
+     * jsonlite_result result = jsonlite_parser_tokenize(p, chunk1, sizeof(chunk1) - 1);
+     * assert(result == jsonlite_result_end_of_stream);
+     * // Now you can release or reuse chunk1 buffer.
+     *
+     * result = jsonlite_parser_tokenize(p, chunk2, sizeof(chunk2) - 1);
+     * assert(result == jsonlite_result_ok);
+     *
+     * jsonlite_parser_release(p);
      * @endcode
      */
     jsonlite_result jsonlite_parser_tokenize(jsonlite_parser parser, const void *buffer, size_t size);
@@ -806,7 +769,7 @@ extern "C" {
      * @see jsonlite_parser
      * @see jsonlite_result
      * @param parser the parser object.
-     * @return JSON parsing result.
+     * @return JSON parsing result or jsonlite_result_invalid_argument when parser is NULL.
      */
     jsonlite_result jsonlite_parser_resume(jsonlite_parser parser);
 
@@ -816,7 +779,8 @@ extern "C" {
      * @see jsonlite_parser
      * @see jsonlite_result
      * @param parser the parser object.
-     * @return jsonlite_result_not_allowed when operation is not allowed;
+     * @return jsonlite_result_invalid_argument when parser is NULL;
+     * jsonlite_result_not_allowed when operation is not allowed;
      * otherwise jsonlite_result_ok.
      */
     jsonlite_result jsonlite_parser_suspend(jsonlite_parser parser);
@@ -826,10 +790,26 @@ extern "C" {
      * @see jsonlite_parser
      * @see jsonlite_result
      * @param parser the parser object.
-     * @return jsonlite_result_not_allowed when operation is not allowed;
+     * @return jsonlite_result_invalid_argument when parser is NULL or result is jsonlite_result_unknown;
      * otherwise jsonlite_result_ok.
      */
     jsonlite_result jsonlite_parser_terminate(jsonlite_parser parser, jsonlite_result result);
+
+    /** \brief Releases parser object.
+     *
+     * If parser is NULL, jsonlite_parser_release does nothing.
+     * @see jsonlite_parser
+     * @param parser the parser object.
+     */
+    void jsonlite_parser_release(jsonlite_parser parser);
+
+    /** \brief Releases internal resources and states.
+     *
+     * If parser is NULL, jsonlite_parser_reset does nothing.
+     * @see jsonlite_parser
+     * @param parser the parser object.
+     */
+    void jsonlite_parser_cleanup(jsonlite_parser parser);
 
     /** \brief jsonlite_parser_callbacks structure initialized with callbacks that do nothing.
      */
@@ -839,8 +819,6 @@ extern "C" {
 }
 #endif
 
-#define jsonlite_parser_estimate_size(depth) (sizeof(jsonlite_parser_struct) + (depth) * sizeof(parse_state))
-
 #endif
 
 // #include "jsonlite_stream.h"
@@ -849,7 +827,7 @@ extern "C" {
 
 // #include "jsonlite_token_pool.h"
 //
-//  Copyright 2012-2014, Andrii Mamchur
+//  Copyright 2012-2013, Andrii Mamchur
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -873,9 +851,6 @@ extern "C" {
 extern "C" {
 #endif
 
-#define JSONLITE_TOKEN_POOL_FRONT 0x80
-#define JSONLITE_TOKEN_POOL_FRONT_MASK (JSONLITE_TOKEN_POOL_FRONT - 1)
-
 typedef void (*jsonlite_token_pool_release_value_fn)(void *);
 typedef struct jsonlite_token_pool_struct* jsonlite_token_pool;
 
@@ -889,22 +864,9 @@ typedef struct jsonlite_token_bucket {
     const void *value;
 } jsonlite_token_bucket;
 
-typedef struct jsonlite_token_block {
-    jsonlite_token_bucket *buckets;
-    size_t capacity;
-} jsonlite_token_block;
-
-typedef struct jsonlite_token_pool_struct {
-    jsonlite_token_block blocks[JSONLITE_TOKEN_POOL_FRONT];
-    uint8_t *content_pool;
-    size_t content_pool_size;
-} jsonlite_token_pool_struct;
-
-#define jsonlite_token_pool_estimate_size(count) ((count) * sizeof(jsonlite_token_pool_struct))
-
-size_t jsonlite_token_pool_init_memory(void *mem, size_t size, jsonlite_token_pool* pools);
+jsonlite_token_pool jsonlite_token_pool_create(jsonlite_token_pool_release_value_fn release_fn);
 void jsonlite_token_pool_copy_tokens(jsonlite_token_pool pool);
-void jsonlite_token_pool_cleanup(jsonlite_token_pool* pools, size_t count, jsonlite_token_pool_release_value_fn release);
+void jsonlite_token_pool_release(jsonlite_token_pool pool);
 jsonlite_token_bucket* jsonlite_token_pool_get_bucket(jsonlite_token_pool pool, jsonlite_token *token);
 
 #ifdef __cplusplus
