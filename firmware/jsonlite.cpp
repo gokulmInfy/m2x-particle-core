@@ -964,7 +964,7 @@ parse_exponent_fraction:
         default:                    goto error_number;
     }
 parse_fraction:
-    token.type.number |= (jsonlite_number_type)jsonlite_number_frac;
+    token.type.number = token.type.number | (jsonlite_number_type)jsonlite_number_frac;
     if (++c == l)                   goto end_of_stream;
     if (0x30 <= *c && *c <= 0x39)   goto parse_frac_number;
     goto error_number;
@@ -978,7 +978,7 @@ parse_frac_number:
         default:                    goto error_number;
     }
 parse_exponent:
-    token.type.number |= (jsonlite_number_type)jsonlite_number_exp;
+    token.type.number = token.type.number | (jsonlite_number_type)jsonlite_number_exp;
     if (++c == l)                   goto end_of_stream;
     if (0x30 <= *c && *c <= 0x39)   goto parse_exponent_number;
     switch(*c) {
