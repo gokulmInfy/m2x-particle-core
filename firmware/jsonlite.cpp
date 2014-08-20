@@ -102,7 +102,7 @@ jsonlite_builder jsonlite_builder_init(size_t depth, jsonlite_stream stream) {
 
     depth = depth < 2 ? 2 : depth;
 
-    builder = malloc(sizeof(jsonlite_builder_struct) + depth * sizeof(jsonlite_write_state));
+    builder = (jsonlite_builder)malloc(sizeof(jsonlite_builder_struct) + depth * sizeof(jsonlite_write_state));
     builder->state = (jsonlite_write_state *)((uint8_t *)builder + sizeof(jsonlite_builder_struct));
     builder->limit = builder->state + depth - 1;
     builder->stack = builder->state;
@@ -436,7 +436,7 @@ static void jsonlite_builder_raw(jsonlite_builder builder, const void *data, siz
 }
 
 static void jsonlite_builder_repeat(jsonlite_builder builder, const char ch, size_t count) {
-    ptrdiff_t i = 0;
+    size_t i = 0;
     for (; i < count; i++) {
         jsonlite_stream_write(builder->stream, &ch, 1);
     }
@@ -522,8 +522,8 @@ jsonlite_result jsonlite_builder_raw_value(jsonlite_builder builder, const void 
 static void jsonlite_builder_write_base64(jsonlite_builder builder, const void *data, size_t length) {
     static const char encode[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     char buffer[5] = {0};
-    const uint8_t *c = data;
-    const uint8_t *l = data + length;
+    const uint8_t *c = (const uint8_t *)data;
+    const uint8_t *l = (const uint8_t *)data + length;
     uint32_t bits;
     jsonlite_stream_write(builder->stream, "\"", 1);
 next:
@@ -768,7 +768,7 @@ jsonlite_result jsonlite_parser_tokenize(jsonlite_parser parser, const void *buf
         parser->cursor = b;
         parser->limit = b + total_size;
     } else {
-        parser->buffer = buffer;
+        parser->buffer = (const uint8_t*)buffer;
         parser->cursor = parser->buffer;
         parser->limit = parser->buffer + size;
     }
@@ -827,7 +827,7 @@ static void jsonlite_do_parse(jsonlite_parser parser) {
     const uint8_t *token_start = NULL;
     const parse_state *last = parser->last;
     parse_state *state = parser->current;
-    jsonlite_token token = {NULL, NULL, NULL, 0};
+    jsonlite_token token = {NULL, NULL, NULL, (jsonlite_number_type)0};
     jsonlite_result result = jsonlite_result_ok;
     uint32_t value, utf32;
     uint8_t hex_value;
@@ -946,14 +946,14 @@ parse_value:
 // Number parsing
 parse_negative_number:
     token.start = c;
-    token.type.number = jsonlite_number_int | jsonlite_number_negative;
+    token.type.number = (jsonlite_number_type)(jsonlite_number_int | jsonlite_number_negative);
     if (++c == l)                   goto end_of_stream;
     if (0x31 <= *c && *c <= 0x39)   goto parse_digits;
     if (*c == 0x30)                 goto parse_exponent_fraction;
     goto error_number;
 parse_zero_leading_number:
     token.start = c;
-    token.type.number = jsonlite_number_int | jsonlite_number_zero_leading;
+    token.type.number = (jsonlite_number_type)(jsonlite_number_int | jsonlite_number_zero_leading);
 parse_exponent_fraction:
     if (++c == l)                   goto end_of_stream;
     switch (*c) {
@@ -964,7 +964,7 @@ parse_exponent_fraction:
         default:                    goto error_number;
     }
 parse_fraction:
-    token.type.number |= jsonlite_number_frac;
+    token.type.number |= (jsonlite_number_type)jsonlite_number_frac;
     if (++c == l)                   goto end_of_stream;
     if (0x30 <= *c && *c <= 0x39)   goto parse_frac_number;
     goto error_number;
@@ -978,7 +978,7 @@ parse_frac_number:
         default:                    goto error_number;
     }
 parse_exponent:
-    token.type.number |= jsonlite_number_exp;
+    token.type.number |= (jsonlite_number_type)jsonlite_number_exp;
     if (++c == l)                   goto end_of_stream;
     if (0x30 <= *c && *c <= 0x39)   goto parse_exponent_number;
     switch(*c) {
@@ -999,7 +999,7 @@ parse_exponent_number:
     }
 parse_digit_leading_number:
     token.start = c;
-    token.type.number = jsonlite_number_int | jsonlite_number_digit_leading;
+    token.type.number = (jsonlite_number_type)(jsonlite_number_int | jsonlite_number_digit_leading);
 parse_digits:
     if (++c == l)                   goto end_of_stream;
     if (0x30 <= *c && *c <= 0x39)   goto parse_digits;
@@ -1028,7 +1028,7 @@ next_char:
     if (*c < 0x20)      goto error_token;
     goto next_char;
 escaped:
-    token.type.string |= jsonlite_string_escape;
+    token.type.string |= (jsonlite_string_type)jsonlite_string_escape;
     if (++c == l)       goto end_of_stream;
     switch (*c) {
         case 0x22:      goto next_char;     // "    quotation mark  U+0022
@@ -1043,15 +1043,15 @@ escaped:
         default:        goto error_escape;
     }
 hex:
-    token.type.string |= jsonlite_string_unicode_escape;
+    token.type.string |= (jsonlite_string_type)jsonlite_string_unicode_escape;
     if (c++ + 4 >= l)       goto end_of_stream;
     HEX_CHAR_TO_INT(c, 1);  value = hex_value;
     HEX_CHAR_TO_INT(c, 1);  value = (uint32_t)(value << 4) | hex_value;
     HEX_CHAR_TO_INT(c, 1);  value = (uint32_t)(value << 4) | hex_value;
     HEX_CHAR_TO_INT(c, 0);  value = (uint32_t)(value << 4) | hex_value;
 
-    if ((value & 0xFFFFu) >= 0xFFFEu)           token.type.string |= jsonlite_string_unicode_noncharacter;
-    if (value >= 0xFDD0u && value <= 0xFDEFu)   token.type.string |= jsonlite_string_unicode_noncharacter;
+    if ((value & 0xFFFFu) >= 0xFFFEu)           token.type.string |= (jsonlite_string_type)jsonlite_string_unicode_noncharacter;
+    if (value >= 0xFDD0u && value <= 0xFDEFu)   token.type.string |= (jsonlite_string_type)jsonlite_string_unicode_noncharacter;
     if (0xD800 > value || value > 0xDBFF)       goto next_char;
 
     // UTF-16 Surrogate
@@ -1066,11 +1066,11 @@ hex:
 
     if (value < 0xDC00 || value > 0xDFFF)       goto error_escape;
     utf32 += value - 0xDC00 + 0x10000;
-    if ((utf32 & 0x0FFFFu) >= 0x0FFFEu)         token.type.string |= jsonlite_string_unicode_noncharacter;
+    if ((utf32 & 0x0FFFFu) >= 0x0FFFEu)         token.type.string |= (jsonlite_string_type)jsonlite_string_unicode_noncharacter;
     goto next_char;
 utf8:
     token.type.string |= jsonlite_string_utf8;
-    int res = jsonlite_clz((unsigned int)((*c) ^ 0xFF) << 0x19);
+    res = jsonlite_clz((unsigned int)((*c) ^ 0xFF) << 0x19);
     utf32 = (*c & (0xFF >> (res + 1)));
     value = 0xAAAAAAAA; // == 1010...
     if (c + res >= l) goto end_of_stream;
@@ -1079,8 +1079,8 @@ utf8:
         case 2: value = (value << 2) | (*++c >> 6); utf32 = (utf32 << 6) | (*c & 0x3F);
         case 1: value = (value << 2) | (*++c >> 6); utf32 = (utf32 << 6) | (*c & 0x3F);
             if (value != 0xAAAAAAAA)                    goto error_utf8;
-            if ((utf32 & 0xFFFFu) >= 0xFFFEu)           token.type.string |= jsonlite_string_unicode_noncharacter;
-            if (utf32 >= 0xFDD0u && utf32 <= 0xFDEFu)   token.type.string |= jsonlite_string_unicode_noncharacter;
+            if ((utf32 & 0xFFFFu) >= 0xFFFEu)           token.type.string |= (jsonlite_string_type)jsonlite_string_unicode_noncharacter;
+            if (utf32 >= 0xFDD0u && utf32 <= 0xFDEFu)   token.type.string |= (jsonlite_string_type)jsonlite_string_unicode_noncharacter;
     }
     goto next_char;
 string_parsed:
@@ -1150,7 +1150,7 @@ end:
 
     res = parser->buffer_own != NULL;
     if ((parser->limit - token_start) > 0) {
-        parser->buffer_own = malloc(parser->limit - token_start);       // LCOV_EXCL_LINE
+        parser->buffer_own = (uint8_t*)malloc(parser->limit - token_start);       // LCOV_EXCL_LINE
         parser->limit = parser->buffer_own + (parser->limit - token_start);
         memcpy(parser->buffer_own, token_start, parser->limit - parser->buffer_own);
         if (res) {
@@ -1237,7 +1237,7 @@ static int jsonlite_mem_stream_write(jsonlite_stream stream, const void *data, s
         mem_stream->cursor += write_limit;
 
         size_t size = sizeof(jsonlite_mem_stream_block) + mem_stream->block_size;
-        jsonlite_mem_stream_block *block = malloc(size);
+        jsonlite_mem_stream_block *block = (jsonlite_mem_stream_block*)malloc(size);
         block->data = (uint8_t *)block + sizeof(jsonlite_mem_stream_block);
         block->next = NULL;
 
@@ -1267,7 +1267,7 @@ static void jsonlite_mem_stream_release(jsonlite_stream stream) {
 
 jsonlite_stream jsonlite_mem_stream_init(size_t block_size) {
     size_t size = SIZE_OF_MEM_STREAM();
-    struct jsonlite_stream_struct *stream = malloc(size);
+    struct jsonlite_stream_struct *stream = (jsonlite_stream_struct*)malloc(size);
     stream->write = jsonlite_mem_stream_write;
     stream->release = jsonlite_mem_stream_release;
 
@@ -1343,12 +1343,12 @@ static int jsonlite_static_mem_stream_write(jsonlite_stream stream, const void *
 
 jsonlite_stream jsonlite_static_mem_stream_init(void *buffer, size_t size) {
     size_t s = SIZE_OF_STATIC_MEM_STREAM();
-    struct jsonlite_stream_struct *stream = malloc(s);
+    struct jsonlite_stream_struct *stream = (jsonlite_stream_struct*)malloc(s);
     stream->write = jsonlite_static_mem_stream_write;
     stream->release = jsonlite_stream_free_mem;
 
     jsonlite_static_mem_stream *mem_stream = CAST_TO_STATIC_MEM_STREAM(stream);
-    mem_stream->buffer = buffer;
+    mem_stream->buffer = (uint8_t*)buffer;
     mem_stream->size = size;
     mem_stream->written = 0;
     mem_stream->enabled = 1;
@@ -1374,7 +1374,7 @@ static int jsonlite_file_stream_write(jsonlite_stream stream, const void *data, 
 
 jsonlite_stream jsonlite_file_stream_init(FILE *file) {
     size_t size = SIZE_OF_FILE_STREAM();
-    struct jsonlite_stream_struct *stream = malloc(size);
+    struct jsonlite_stream_struct *stream = (jsonlite_stream_struct*)malloc(size);
     stream->write = jsonlite_file_stream_write;
     stream->release = jsonlite_stream_free_mem;
 
@@ -1554,6 +1554,7 @@ size_t jsonlite_token_to_uft16(jsonlite_token *ts, uint16_t **buffer) {
     uint16_t utf16;
     uint16_t *c = *buffer = (uint16_t *)malloc(size);
     int res;
+    uint32_t code;
 step:
     if (p == l)         goto done;
     if (*p == '\\')     goto escaped;
@@ -1591,7 +1592,7 @@ escaped:
     goto step;
 utf8:
     res = jsonlite_clz(((*p) ^ 0xFF) << 0x19);
-    uint32_t code = (*p & (0xFF >> (res + 1)));
+    code = (*p & (0xFF >> (res + 1)));
     switch (res) {
         case 3: code = (code << 6) | (*++p & 0x3F);
         case 2: code = (code << 6) | (*++p & 0x3F);
@@ -1618,7 +1619,7 @@ size_t jsonlite_token_base64_to_binary(jsonlite_token *ts, void **buffer) {
     uint8_t *c;
     size_t bytes, i;
     if (size > 0) {
-        c = *buffer = (uint16_t *)malloc(size);
+        c = (uint8_t*)*buffer = (uint16_t *)malloc(size);
     } else {
         *buffer = NULL;
         goto error;
