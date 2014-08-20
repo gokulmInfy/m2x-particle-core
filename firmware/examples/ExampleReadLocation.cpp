@@ -1,4 +1,3 @@
-#include "jsonlite/jsonlite.h"
 #include "M2XStreamClient/M2XStreamClient.h"
 
 char feedId[] = "<feed id>";          // Feed you want to post to
