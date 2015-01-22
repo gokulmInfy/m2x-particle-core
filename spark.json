@@ -2,6 +2,6 @@
   "name": "M2XStreamClient",
   "author": "Josh Hollenbeck <josh.hollenbeck@citrusbyte.com>",
   "license": "MIT",
-  "version": "0.0.10",
+  "version": "2.0.0",
   "description": "Client Library for AT&T's M2X - Cloud-Based Data Storage Service and Management Toolset Customized for the Internet of Things"
 }
