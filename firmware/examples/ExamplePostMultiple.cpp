@@ -1,6 +1,6 @@
 #include "M2XStreamClient/M2XStreamClient.h"
 
-char feedId[] = "<feed id>";          // Feed you want to post to
+char deviceId[] = "<device id>";      // Device you want to post to
 char m2xKey[] = "<M2X access key>";   // Your M2X access key
 
 TCPClient client;
@@ -26,8 +26,8 @@ void setup() {
 }
 
 void loop() {
-  int response = m2xClient.postMultiple(feedId, 2, streamNames,
-                                        counts, ats, values);
+  int response = m2xClient.postDeviceUpdates(deviceId, 2, streamNames,
+                                             counts, ats, values);
   Serial.print("M2x client response code: ");
   Serial.println(response);
 

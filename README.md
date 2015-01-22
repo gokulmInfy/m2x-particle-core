@@ -7,9 +7,9 @@ Getting Started
 ==========================
 1. Signup for an [M2X Account](https://m2x.att.com/signup).
 2. Obtain your _Master Key_ from the Master Keys tab of your [Account Settings](https://m2x.att.com/account) screen.
-3. Create your first [Data Source Blueprint](https://m2x.att.com/blueprints) and copy its _Feed ID_.
+3. Create your first [Device](https://m2x.att.com/devices) and copy its _Device ID_.
 4. Review the [M2X API Documentation](https://m2x.att.com/developer/documentation/overview).
-5. Obtain a Spark Core and [set it up](http://docs.spark.io/start/).
+5. Obtain an Arduino with built-in wifi or ethernet, or a separate wifi or ethernet shield and [set it up](http://arduino.cc/en/Guide/HomePage). These docs were written for an [__Arduino Uno__](http://arduino.cc/en/Main/arduinoBoardUno) with a wifi or ethernet shield but the instructions can be adapted for other Arduino models.
 
 Please consult the [M2X glossary](https://m2x.att.com/developer/documentation/glossary) if you have questions about any M2X specific terms.
 
@@ -69,9 +69,9 @@ The IP address here is only used when DHCP fails to give a valid IP address. It 
 M2X API Key
 -----------
 
-Once you [register](https://m2x.att.com/signup) for an AT&amp;T M2X account, an API key is automatically generated for you. This key is called a _Primary Master Key_ and can be found in the _Master Keys_ tab of your [Account Settings](https://m2x.att.com/account). This key cannot be edited nor deleted, but it can be regenerated. It will give you full access to all APIs.
+Once you [register](https://m2x.att.com/signup) for an AT&amp;T M2X account, an API key is automatically generated for you. This key is called a _Primary Master Key_ and can be found in the _Master Keys_ tab of your [Account Settings](https://m2x.att.com/account). This key cannot be edited or deleted, but it can be regenerated. It will give you full access to all APIs.
 
-However, you can also create a _Data Source API Key_ associated with a given Data Source (Feed). You can use the Data Source API key to access the streams belonging to that Data Source.
+However, you can also create a _Device API Key_ associated with a given Device, you can use the Device API key to access the streams belonging to that Device.
 
 You can customize this variable in the following line in the examples:
 
@@ -79,19 +79,19 @@ You can customize this variable in the following line in the examples:
 char m2xKey[] = "<M2X access key>";
 ```
 
-Feed ID
+Device ID
 -------
 
-A feed is associated with a data source, it is a set of data streams, such as streams of locations, temperatures, etc. The following line is needed to configure the feed used:
+A device is a source of data (it could be a physical device, a virtual device, a service, or an application). It is a set of data streams, such as streams of locations, temperatures, etc. The following line is needed to configure the device used:
 
 ```
-char feedId[] = "<feed id>";
+char deviceId[] = "<device id>";
 ```
 
 Stream Name
 ------------
 
-A stream in a feed is a set of time-series data points of a specific type (i.e. humidity, temperature). You can use the M2XStreamClient library to send stream values to the M2X API server, or receive stream values from the M2X API server. Use the following line to configure the stream if needed:
+A stream in a device is a set of times series data of a specific type (i,e. humidity, temperature). You can use the M2XStreamClient library to send stream values to M2X server, or receive stream values from M2X server. Use the following line to configure the stream if needed:
 
 ```
 char streamName[] = "<stream name>";
@@ -105,12 +105,14 @@ TCPClient client;
 M2XStreamClient m2xClient(&client, m2xKey);
 ```
 
-In the M2XStreamClient, four (4) types of API functions are provided:
+In the M2XStreamClient, the following API functions are provided:
 
-* `send`: Send stream value to M2X
-* `receive`: Receive stream value from M2X
-* `updateLocation`: Send location value of a feed to M2X
-* `readLocation`: Receive location values of a feed from M2X
+* `updateStreamValue`: Send stream value to M2X server
+* `postDeviceUpdates`: Post values from multiple streams to M2X server
+* `listStreamValues`: Receive stream value from M2X server
+* `updateLocation`: Send location value of a device to M2X server
+* `readLocation`: Receive location values of a device from M2X server
+* `deleteValues`: Delete stream values from M2X server
 
 Returned values
 ---------------
@@ -127,77 +129,95 @@ static const int E_INVALID = -4;
 static const int E_JSON_INVALID = -5;
 ```
 
-Post stream value
------------------
+Returned values
+---------------
 
-The following functions can be used to post a value to a stream, which belongs to a feed:
+For all those functions, the HTTP status code will be returned if we can fulfill an HTTP request. For example, `200` will be returned upon success, and `401` will be returned if we didn't provide a valid M2X API Key. A full-list of M2X API error codes can be found here: [M2X API Error Codes] (https://m2x.att.com/developer/documentation/overview#Client-Errors)
+
+Otherwise, the following error codes will be used:
+
+```
+static const int E_NOCONNECTION = -1;
+static const int E_DISCONNECTED = -2;
+static const int E_NOTREACHABLE = -3;
+static const int E_INVALID = -4;
+static const int E_JSON_INVALID = -5;
+```
+
+Update stream value
+-------------------
+
+The following functions can be used to post one single value to a stream, which belongs to a device:
 
 ```
 template <class T>
-int post(const char* feedId, const char* streamName, T value);
+int updateStreamValue(const char* deviceId, const char* streamName, T value);
 ```
 
-Here we use C++ templates to generate functions for different types of values. Feel free to use values of `float`, `int`, `long` or even `const char*` types here.
+Here we use C++ templates to generate functions for different types of values, feel free to use values of `float`, `int`, `long` or even `const char*` types here.
 
-Post multiple values
---------------------
+Post device updates
+-------------------
 
-M2X also supports posting multiple values to multiple streams in one call. To do so, use the following function:
+M2X also supports posting multiple values to multiple streams in one call, use the following function for this:
 
 ```
 template <class T>
-int postMultiple(const char* feedId, int streamNum,
-                 const char* names[], const int counts[],
-                 const char* ats[], T values[]);
+int postDeviceUpdates(const char* deviceId, int streamNum,
+                      const char* names[], const int counts[],
+                      const char* ats[], T values[]);
 ```
 
-Please refer to the comments in the source code for additional information on how to use this function. Essentially, you will need to provide the list of streams you want to post to, and values for each stream.
+Please refer to the comments in the source code on how to use this function, basically, you need to provide the list of streams you want to post to, and values for each stream.
 
-Fetch stream value
+List stream values
 ------------------
 
-Since Spark Core boards contain very limited memory, we cannot put the whole returned string in memory, parse it into JSON representations and read what we want. Instead, we use a callback-based mechanism here. We parse the returned JSON string piece by piece. Whenever we got a new stream value point, we will call the following callback functions:
+Since mbed microcontroller contains very limited memory, we cannot put the whole returned string in memory, parse it into JSON representations and read what we want. Instead, we use a callback-based mechanism here. We parse the returned JSON string piece by piece, whenever we got a new stream value point, we will call the following callback functions:
 
 ```
-void (*stream_value_read_callback)(const char* at,
-                                   const char* value,
-                                   int index,
-                                   void* context);
-
+typedef void (*stream_value_read_callback)(const char* at,
+                                           const char* value,
+                                           int index,
+                                           void* context,
+                                           int type);
 ```
 
-The implementation of the callback function is left for the user to fill in, you can read the value of the point in the `value` argument, and the timestamp of the point in the `at` argument. We even pass the index of this data point in the whole stream as well as a user-specified context variable to this function, so that you can perform different tasks.
+The implementation of the callback function is left for the user to fill in, you can read the value of the point in the `value` argument, and the timestamp of the point in the `at` argument. We even pass the index of this this data point in the whole stream as well as a user-specified context variable to this function, so as you can perform different tasks on this.
 
-To read the stream values, all you need to do is call this function:
+`type` indicates the type of value stored in `value`: 1 for string, 2 for number. However, keep in mind that `value` will always be a pointer to an array of char, even though `type` indicates the current value is a number. In this case, `atoi` or `atof` might be needed.
+
+To read the stream values, all you need to do is calling this function:
 
 ```
-int fetchValues(const char* feedId, const char* streamName,
-                stream_value_read_callback callback, void* context,
-                const char* startTime = NULL, const char* endTime = NULL,
-                const char* limit = NULL);
+int listStreamValues(const char* deviceId, const char* streamName,
+                     stream_value_read_callback callback, void* context,
+                     const char* query = NULL);
 ```
 
-Besides the feed ID and stream name, only the callback function and a user context needs to be specified. Optional filtering parameters such as start time, end time, and limits per call can also be used here.
+Besides the device ID and stream name, only the callback function and a user context needs to be specified. Optional query parameters might also be available here, for example, the current query parameter picks value from a specific range:
 
-Update Datasource Location
+```
+start=2014-10-01T00:00:00Z&end=2014-10-10T00:00:00Z
+```
+
+Update Device Location
 --------------------------
 
-You can use the following function to update the location for a data source (feed):
+You can use the following function to update the location for a device:
 
 ```
 template <class T>
-int updateLocation(const char* feedId, const char* name,
+int updateLocation(const char* deviceId, const char* name,
                    T latitude, T longitude, T elevation);
 ```
 
-Different from stream values, locations are attached to feeds rather than streams.
+Different from stream values, locations are attached to devices rather than streams. We use templates here, since the values may be in different format, for example, you can express latitudes in both `double` and `const char*`.
 
-The reason we are providing templated functions is due to floating point value precision: on most Spark Core boards, `double` is the same as `float`, i.e., a 32-bit (4-byte) single precision floating number. That means only 7 digits in the number are reliable. When we are using `double` here to represent latitude/longitude, it means that only 5 digits after the floating point are accurate, which means we can represent as accurate to ~1.1132m distance using `double` here. If you want to represent coordinates that are more specific, you need to use strings here.
-
-Read Datasource Location
+Read Device Location
 ------------------------
 
-Similar to reading stream values, we also use callback functions to read datasource locations. The only difference is that different parameters are used in the function:
+Similar to reading stream values, we also use callback functions here. The only difference is that different parameters are used in the function:
 
 ```
 void (*location_read_callback)(const char* name,
@@ -210,15 +230,27 @@ void (*location_read_callback)(const char* name,
 
 ```
 
-For memory space consideration, we only provide double-precision when reading locations. An index of the location points is also provided here together with a user-specified context.
+For memory space consideration, now we only provide double-precision when reading locations. An index of the location points is also provided here together with a user-specified context.
 
 The API is also slightly different, in that the stream name is not needed here:
 
 ```
-int readLocation(const char* feedId, location_read_callback callback,
+int readLocation(const char* deviceId, location_read_callback callback,
                  void* context);
 
 ```
+
+Delete stream values
+--------------------
+
+The following function can be used to delete stream values within a date range:
+
+```
+int deleteValues(const char* deviceId, const char* streamName,
+                 const char* from, const char* end);
+```
+
+`from` and `end` fields here follow ISO 8601 time format.
 
 Examples
 ========
@@ -254,7 +286,7 @@ This example sends location data to M2X. Ideally a GPS device should be used her
 ExampleReadLocation
 ---------------
 
-This example reads location data of a feed from M2X and prints them to the Serial interface.
+This example reads location data of a device from M2X and prints them to the Serial interface.
 
 LICENSE
 =======

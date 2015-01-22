@@ -1,6 +1,6 @@
 #include "M2XStreamClient/M2XStreamClient.h"
 
-char feedId[] = "<feed id>";          // Feed you want to post to
+char deviceId[] = "<device id>";      // Device you want to post to
 char streamName[] = "<stream name>";  // Stream you want to post to
 char m2xKey[] = "<M2X access key>";   // Your M2X access key
 
@@ -36,7 +36,7 @@ void loop() {
   Serial.print("  deg F: ");
   Serial.println(degreesF);
 
-  int response = m2xClient.post(feedId, streamName, degreesC);
+  int response = m2xClient.updateStreamValue(deviceId, streamName, degreesC);
   Serial.print("M2x client response code: ");
   Serial.println(response);
 

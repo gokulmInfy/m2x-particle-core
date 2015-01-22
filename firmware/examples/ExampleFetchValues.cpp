@@ -1,13 +1,13 @@
 #include "M2XStreamClient/M2XStreamClient.h"
 
-char feedId[] = "<feed id>";          // Feed you want to post to
+char deviceId[] = "<device id>";      // Device you want to post to
 char streamName[] = "<stream name>";  // Stream you want to post to
 char m2xKey[] = "<M2X access key>";   // Your M2X access key
 
 TCPClient client;
 M2XStreamClient m2xClient(&client, m2xKey);
 
-void on_data_point_found(const char* at, const char* value, int index, void* context) {
+void on_data_point_found(const char* at, const char* value, int index, void* context, int type) {
   Serial.print("Found a data point, index:");
   Serial.println(index);
   Serial.print("At:");
@@ -29,7 +29,7 @@ void setup() {
 }
 
 void loop() {
-  int response = m2xClient.fetchValues(feedId, streamName, on_data_point_found, NULL);
+  int response = m2xClient.listStreamValues(deviceId, streamName, on_data_point_found, NULL);
   Serial.print("M2x client response code: ");
   Serial.println(response);
 
