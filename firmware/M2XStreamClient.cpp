@@ -7,6 +7,7 @@
 
 const char* M2XStreamClient::kDefaultM2XHost = "api-m2x.att.com";
 
+static int write_delete_values(Print* print, const char* from, const char* end);
 int print_encoded_string(Print* print, const char* str);
 int tolower(int ch);
 
@@ -36,36 +37,23 @@ M2XStreamClient::M2XStreamClient(Client* client,
                                              _null_print() {
 }
 
-#define WRITE_QUERY_PART(client_, started_, name_, str_) { \
-  if (str_) { \
-    if (started_) { \
-      (client_)->print("&"); \
-    } else { \
-      (client_)->print("?"); \
-      started_ = true; \
-    } \
-    (client_)->print(name_ "="); \
-    (client_)->print(str_); \
-  } \
-  }
-
-int M2XStreamClient::fetchValues(const char* feedId, const char* streamName,
-                                 stream_value_read_callback callback, void* context,
-                                 const char* startTime, const char* endTime,
-                                 const char* limit) {
+int M2XStreamClient::listStreamValues(const char* deviceId, const char* streamName,
+                                      stream_value_read_callback callback, void* context,
+                                      const char* query) {
   if (_client->connect(_host, _port)) {
-    bool query_started = false;
-
     DBGLN("%s", "Connected to M2X server!");
-    _client->print("GET /v1/feeds/");
-    print_encoded_string(_client, feedId);
+    _client->print("GET /v2/devices/");
+    print_encoded_string(_client, deviceId);
     _client->print("/streams/");
     print_encoded_string(_client, streamName);
     _client->print("/values");
 
-    WRITE_QUERY_PART(_client, query_started, "start", startTime);
-    WRITE_QUERY_PART(_client, query_started, "end", endTime);
-    WRITE_QUERY_PART(_client, query_started, "limit", limit);
+    if (query) {
+      if (query[0] != '?') {
+        _client->print('?');
+      }
+      _client->print(query);
+    }
 
     _client->println(" HTTP/1.0");
     writeHttpHeader(-1);
@@ -82,13 +70,13 @@ int M2XStreamClient::fetchValues(const char* feedId, const char* streamName,
   return status;
 }
 
-int M2XStreamClient::readLocation(const char* feedId,
+int M2XStreamClient::readLocation(const char* deviceId,
                                   location_read_callback callback,
                                   void* context) {
   if (_client->connect(_host, _port)) {
     DBGLN("%s", "Connected to M2X server!");
-    _client->print("GET /v1/feeds/");
-    print_encoded_string(_client, feedId);
+    _client->print("GET /v2/devices/");
+    print_encoded_string(_client, deviceId);
     _client->println("/location HTTP/1.0");
 
     writeHttpHeader(-1);
@@ -105,6 +93,32 @@ int M2XStreamClient::readLocation(const char* feedId,
   return status;
 }
 
+int M2XStreamClient::deleteValues(const char* deviceId, const char* streamName,
+                                  const char* from, const char* end) {
+  if (_client->connect(_host, _port)) {
+    DBGLN("%s", "Connected to M2X server!");
+    int length = write_delete_values(&_null_print, from, end);
+    writeDeleteHeader(deviceId, streamName, length);
+    write_delete_values(_client, from, end);
+  } else {
+    DBGLN("%s", "ERROR: Cannot connect to M2X server!");
+    return E_NOCONNECTION;
+  }
+
+  return readStatusCode(true);
+}
+
+static int write_delete_values(Print* print, const char* from,
+                               const char* end) {
+  int bytes = 0;
+  bytes += print->print("{\"from\":\"");
+  bytes += print->print(from);
+  bytes += print->print("\",\"end\":\"");
+  bytes += print->print(end);
+  bytes += print->print("\"}");
+  return bytes;
+}
+
 // Encodes and prints string using Percent-encoding specified
 // in RFC 1738, Section 2.2
 int print_encoded_string(Print* print, const char* str) {
@@ -119,20 +133,33 @@ int print_encoded_string(Print* print, const char* str) {
     } else {
       // Encode all other characters
       bytes += print->print('%');
-      bytes += print->print(CHAR_TO_HEX(str[i] / 16));
-      bytes += print->print(CHAR_TO_HEX(str[i] % 16));
+      bytes += print->print(TO_HEX(str[i] / 16));
+      bytes += print->print(TO_HEX(str[i] % 16));
     }
   }
   return bytes;
 }
 
-void M2XStreamClient::writePostHeader(const char* feedId,
-                                      const char* streamName,
-                                      int contentLength) {
-  _client->print("PUT /v1/feeds/");
-  print_encoded_string(_client, feedId);
+void M2XStreamClient::writePutHeader(const char* deviceId,
+                                     const char* streamName,
+                                     int contentLength) {
+  _client->print("PUT /v2/devices/");
+  print_encoded_string(_client, deviceId);
   _client->print("/streams/");
   print_encoded_string(_client, streamName);
+  _client->println("/value HTTP/1.0");
+
+  writeHttpHeader(contentLength);
+}
+
+void M2XStreamClient::writeDeleteHeader(const char* deviceId,
+                                        const char* streamName,
+                                        int contentLength) {
+  _client->print("DELETE /v2/devices/");
+  print_encoded_string(_client, deviceId);
+  _client->print("/streams/");
+  print_encoded_string(_client, streamName);
+  _client->print("/values");
   _client->println(" HTTP/1.0");
 
   writeHttpHeader(contentLength);
@@ -287,7 +314,7 @@ void M2XStreamClient::close() {
 
 int M2XStreamClient::readStreamValue(stream_value_read_callback callback,
                                      void* context) {
-  const int BUF_LEN = 32;
+  const int BUF_LEN = 64;
   char buf[BUF_LEN];
 
   int length = readContentLength();
@@ -310,6 +337,7 @@ int M2XStreamClient::readStreamValue(stream_value_read_callback callback,
 
   jsonlite_parser_callbacks cbs = jsonlite_default_callbacks;
   cbs.key_found = on_stream_key_found;
+  cbs.number_found = on_stream_number_found;
   cbs.string_found = on_stream_string_found;
   cbs.context.client_state = &state;
 
