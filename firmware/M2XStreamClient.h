@@ -64,28 +64,39 @@ public:
   template <class T>
   int updateStreamValue(const char* deviceId, const char* streamName, T value);
 
-  // Post multiple values to M2X all at once.
+  // Post a single value to multiple M2X streams all at once.
   // +deviceId+ - id of the device to post values
   // +streamNum+ - Number of streams to post
   // +names+ - Array of stream names, the length of the array should
   // be exactly +streamNum+
-  // +counts+ - Array of +streamNum+ length, each item in this array
-  // containing the number of values we want to post for each stream
-  // +ats+ - Timestamps for each value, the length of this array should
-  // be the some of all values in +counts+, for the first +counts[0]+
-  // items, the values belong to the first stream, for the following
-  // +counts[1]+ number of items, the values belong to the second stream,
-  // etc. Notice that timestamps are required here: you must provide
-  // a timestamp for each value posted.
-  // +values+ - Values to post. This works the same way as +ats+, the
-  // first +counts[0]+ number of items contain values to post to the first
-  // stream, the succeeding +counts[1]+ number of items contain values
-  // for the second stream, etc. The length of this array should be
-  // the sum of all values in +counts+ array.
+  // +values+ - Values to post, the length of the array should
+  // be exactly +streamNum+
   template <class T>
-  int postDeviceUpdates(const char* deviceId, int streamNum,
-                        const char* names[], const int counts[],
-                        const char* ats[], T values[]);
+  int updateStreamValues(const char* deviceId, int streamNum,
+                        const char* names[], T values[]);
+
+// Post multiple values to M2X all at once.
+// +deviceId+ - id of the device to post values
+// +streamNum+ - Number of streams to post
+// +names+ - Array of stream names, the length of the array should
+// be exactly +streamNum+
+// +counts+ - Array of +streamNum+ length, each item in this array
+// containing the number of values we want to post for each stream
+// +ats+ - Timestamps for each value, the length of this array should
+// be the some of all values in +counts+, for the first +counts[0]+
+// items, the values belong to the first stream, for the following
+// +counts[1]+ number of items, the values belong to the second stream,
+// etc. Notice that timestamps are required here: you must provide
+// a timestamp for each value posted.
+// +values+ - Values to post. This works the same way as +ats+, the
+// first +counts[0]+ number of items contain values to post to the first
+// stream, the succeeding +counts[1]+ number of items contain values
+// for the second stream, etc. The length of this array should be
+// the sum of all values in +counts+ array.
+template <class T>
+int postDeviceUpdates(const char* deviceId, int streamNum,
+                      const char* names[], const int counts[],
+                      const char* ats[], T values[]);
 
   // Fetch values for a particular data stream. Since memory is
   // very limited on an Arduino, we cannot parse and get all the
