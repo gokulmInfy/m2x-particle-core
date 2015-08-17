@@ -157,14 +157,14 @@ int updateStreamValue(const char* deviceId, const char* streamName, T value);
 
 Here we use C++ templates to generate functions for different types of values, feel free to use values of `float`, `int`, `long` or even `const char*` types here.
 
-Update stream values
+Post Device Update
 -------------------
 
 M2X also supports posting a single value to multiple streams in one call, timestamp is set at the local m2x server time, use the following function for this:
 
 ```
 template <class T>
-int updateStreamValues(const char* deviceId, int streamNum,
+int postDeviceUpdate(const char* deviceId, int streamNum,
                       const char* names[], T values[]);
 ```
 

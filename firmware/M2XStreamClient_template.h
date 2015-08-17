@@ -40,7 +40,7 @@ inline int write_value_to_multiple_streams(Print* print, int streamNum,
 }
 
 template <class T>
-int M2XStreamClient::postStreamValues(const char* deviceId, int streamNum,
+int M2XStreamClient::postDeviceUpdate(const char* deviceId, int streamNum,
                                        const char* names[], T values[]) {
   if (_client->connect(_host, _port)) {
     DBGLN("%s", "Connected to M2X server!");
@@ -48,7 +48,7 @@ int M2XStreamClient::postStreamValues(const char* deviceId, int streamNum,
                                        values);
     _client->print("POST /v2/devices/");
     print_encoded_string(_client, deviceId);
-    _client->println("/values HTTP/1.0");
+    _client->println("/update HTTP/1.0");
     writeHttpHeader(length);
     write_value_to_multiple_streams(_client, streamNum, names, values);
   } else {
@@ -86,7 +86,7 @@ inline int write_multiple_values(Print* print, int streamNum,
 
 
 template <class T>
-int M2XStreamClient::updateStreamValues(const char* deviceId, int streamNum,
+int M2XStreamClient::postDeviceUpdates(const char* deviceId, int streamNum,
                                        const char* names[], const int counts[],
                                        const char* ats[], T values[]) {
   if (_client->connect(_host, _port)) {
