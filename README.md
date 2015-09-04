@@ -17,7 +17,7 @@ How to Install the library
 ==========================
 
 1. M2XStreamClient Library
-  * In the [Particle Core IDE](https://www.particle.io/build), click the `Libraries` Icon
+  * In the [Particle Build IDE](https://www.particle.io/build), click the `Libraries` Icon
   * Search for `M2XStreamClient` and click the found library
   * Click `Include in App` and choose your current working Application
 
