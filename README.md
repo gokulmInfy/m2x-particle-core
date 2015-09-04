@@ -1,7 +1,7 @@
-Spark Core M2X API Client (Beta)
+Particle Core M2X API Client (Beta)
 =====================
 
-The Spark Core library is used to send/receive data to/from [AT&amp;T's M2X service](https://m2x.att.com/) from the [Spark Core](https://www.spark.io/).
+The Particle Core library is used to send/receive data to/from [AT&amp;T's M2X service](https://m2x.att.com/) from the [Particle Core](https://www.particle.io/).
 
 Getting Started
 ==========================
@@ -17,7 +17,7 @@ How to Install the library
 ==========================
 
 1. M2XStreamClient Library
-  * In the [Spark Core IDE](https://www.spark.io/build), click the `Libraries` Icon
+  * In the [Particle Core IDE](https://www.particle.io/build), click the `Libraries` Icon
   * Search for `M2XStreamClient` and click the found library
   * Click `Include in App` and choose your current working Application
 
@@ -30,12 +30,12 @@ Hardware Setup
 Board Setup
 -----------
 
-The Spark Core website has a very good [tutorial](http://docs.spark.io/#getting-started) on getting the Spark Core setup and connected to wifi.
+The Particle website has a very good [tutorial](https://docs.particle.io/guide/getting-started/intro/core/) on getting the Particle Core setup and connected to wifi.
 
 Sensor Setup
 ------------
 
-Different sensors can be hooked up to a Spark Core board to provide different properties including temperatures, humidity, etc. You can use a breadboard as well as wires to connect different sensors to your Spark Core. For a detailed tutorial on connecting different sensors, please refer to the Spark Core [Hackster](http://spark.hackster.io/) page.
+Different sensors can be hooked up to a Particle Core board to provide different properties including temperatures, humidity, etc. You can use a breadboard as well as wires to connect different sensors to your Particle Core. For a detailed tutorial on connecting different sensors, please refer to the Particle [Hackster](http://particle.hackster.io/) page.
 
 
 Variables used in Examples
@@ -257,11 +257,11 @@ Examples
 
 We provide a series of examples that will help you get an idea of how to use the `M2XStreamClient` library to perform all kinds of tasks.
 
-Note that the examples contain fictionary variables, and that they need to be configured as per the instructions above before running on your Spark Core board. Each of the examples here also needs either a Wifi Shield or an Ethernet Shield hooked up to your device.
+Note that the examples contain fictionary variables, and that they need to be configured as per the instructions above before running on your Particle Core board. Each of the examples here also needs either a Wifi Shield or an Ethernet Shield hooked up to your device.
 
 In the `ExamplePost` a temperature sensor, a breadboard and 5 wires are also needed to get temperature data, you need to wire the board like the following:
 
-[![Wiring](https://github.com/attm2x/m2x-spark-core/raw/master/docs/SparkCoreWiring.jpg)](docs/SparkCoreWiring.jpg)
+[![Wiring](https://github.com/attm2x/m2x-particle-core/raw/master/docs/ParticleCoreWiring.jpg)](docs/ParticleCoreWiring.jpg)
 
 ExamplePost
 -------
