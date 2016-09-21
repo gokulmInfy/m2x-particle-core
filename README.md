@@ -13,6 +13,10 @@ Getting Started
 
 Please consult the [M2X glossary](https://m2x.att.com/developer/documentation/glossary) if you have questions about any M2X specific terms.
 
+>Note: When connecting to M2X via an MQTT library like [hirotakaster/MQTT](https://github.com/hirotakaster/MQTT), ensure that the buffer is set to a size large enough to receive the M2X payloads. Some of these payloads, like the commands API messages, can exceed 255 bytes. See the [M2X MQTT documentation](https://m2x.att.com/developer/documentation/v2/mqtt) for more information on connecting to M2X with the MQTT protocol.
+>
+>This is not applicable when using the `m2x-particle-core` library.
+
 How to Install the library
 ==========================
 
