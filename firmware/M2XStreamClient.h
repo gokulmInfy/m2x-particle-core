@@ -64,6 +64,17 @@ public:
   template <class T>
   int updateStreamValue(const char* deviceId, const char* streamName, T value);
 
+  // Post a single value to multiple M2X streams all at once.
+  // +deviceId+ - id of the device to post values
+  // +streamNum+ - Number of streams to post
+  // +names+ - Array of stream names, the length of the array should
+  // be exactly +streamNum+
+  // +values+ - Values to post, the length of the array should
+  // be exactly +streamNum+
+  template <class T>
+  int postDeviceUpdate(const char* deviceId, int streamNum,
+                        const char* names[], T values[]);
+
   // Post multiple values to M2X all at once.
   // +deviceId+ - id of the device to post values
   // +streamNum+ - Number of streams to post
