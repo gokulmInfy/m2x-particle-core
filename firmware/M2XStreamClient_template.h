@@ -25,14 +25,18 @@ int M2XStreamClient::updateStreamValue(const char* deviceId, const char* streamN
 
 template <class T>
 inline int write_value_to_multiple_streams(Print* print, int streamNum,
-                                 const char* names[], T values[]) {
+                                           const char* names[], const char* at,
+                                           T values[]) {
   int bytes = 0;
-  bytes += print->print("{\"values\":{");
+  bytes += print->print("{\"timestamp\": \"");
+  bytes += print->print(at);
+  bytes += print->print("\", \"values\":{");
   for (int i = 0; i < streamNum; i++) {
     bytes += print->print("\"");
     bytes += print->print(names[i]);
-    bytes += print->print("\": ");
+    bytes += print->print("\": \"");
     bytes += print->print(values[i]);
+    bytes += print->print("\"");
     if (i < streamNum - 1) { bytes += print->print(","); }
   }
   bytes += print->print("}}");
@@ -41,16 +45,17 @@ inline int write_value_to_multiple_streams(Print* print, int streamNum,
 
 template <class T>
 int M2XStreamClient::postDeviceUpdate(const char* deviceId, int streamNum,
-                                       const char* names[], T values[]) {
+                                      const char* names[], const char* at,
+                                      T values[]) {
   if (_client->connect(_host, _port)) {
     DBGLN("%s", "Connected to M2X server!");
     int length = write_value_to_multiple_streams(&_null_print, streamNum, names,
-                                       values);
+                                                 at, values);
     _client->print("POST /v2/devices/");
     print_encoded_string(_client, deviceId);
     _client->println("/update HTTP/1.0");
     writeHttpHeader(length);
-    write_value_to_multiple_streams(_client, streamNum, names, values);
+    write_value_to_multiple_streams(_client, streamNum, names, at, values);
   } else {
     DBGLN("%s", "ERROR: Cannot connect to M2X server!");
     return E_NOCONNECTION;
@@ -83,7 +88,6 @@ inline int write_multiple_values(Print* print, int streamNum,
   bytes += print->print("}}");
   return bytes;
 }
-
 
 template <class T>
 int M2XStreamClient::postDeviceUpdates(const char* deviceId, int streamNum,
