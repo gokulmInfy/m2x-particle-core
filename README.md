@@ -111,8 +111,8 @@ M2XStreamClient m2xClient(&client, m2xKey);
 
 In the M2XStreamClient, the following API functions are provided:
 
-* `updateStreamValue`: Send stream value to M2X server
 * `updateStreamValues`: Post a single value to multiple streams with no timestamp to M2X server
+* `postDeviceUpdate`: Post single values from multiple streams to M2X server
 * `postDeviceUpdates`: Post values from multiple streams to M2X server
 * `listStreamValues`: Receive stream value from M2X server
 * `updateLocation`: Send location value of a device to M2X server
@@ -161,15 +161,16 @@ int updateStreamValue(const char* deviceId, const char* streamName, T value);
 
 Here we use C++ templates to generate functions for different types of values, feel free to use values of `float`, `int`, `long` or even `const char*` types here.
 
-Post Device Update
--------------------
+Post device update
+------------------
 
-M2X also supports posting a single value to multiple streams in one call, timestamp is set at the local m2x server time, use the following function for this:
+M2X also supports posting single values to multiple streams in one call, use the following function for this:
 
 ```
 template <class T>
-int postDeviceUpdate(const char* deviceId, int streamNum,
-                      const char* names[], T values[]);
+int M2XStreamClient::postDeviceUpdate(const char* deviceId, int streamNum,
+                                      const char* names[], const char* at,
+                                      T values[]);
 ```
 
 Please refer to the comments in the source code on how to use this function, basically, you need to provide the list of streams you want to post to, and values for each stream.
