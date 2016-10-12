@@ -3,7 +3,7 @@
 
 #define MIN(a, b) (((a) > (b))?(b):(a))
 
-#define USER_AGENT "User-Agent: M2X Particle Core Client/2.0.2"
+#define USER_AGENT "User-Agent: M2X Particle Core Client/2.1.0"
 
 #include "application.h"
 #include "NullPrint.h"
