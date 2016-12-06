@@ -21,9 +21,17 @@ How to Install the library
 ==========================
 
 1. M2XStreamClient Library
+
+  Via Particle Library Search:
+  
   * In the [Particle Build IDE](https://www.particle.io/build), click the `Libraries` Icon
   * Search for `M2XStreamClient` and click the found library
   * Click `Include in App` and choose your current working Application
+  
+  Manually via GitHub Import:
+  
+  * Grab the url for this repository
+  * Add the library via the [Contribute a Library](https://docs.particle.io/guide/getting-started/build/photon/#contribute-a-library) option in the Particle IDE
 
 2. Examples can be found by clicking on `M2XStreamClient` under your Application's `Included Libraries` listing
 
