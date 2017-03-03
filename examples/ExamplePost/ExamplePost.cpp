@@ -1,4 +1,4 @@
-#include "M2XStreamClient/M2XStreamClient.h"
+#include "M2XStreamClient.h"
 
 char deviceId[] = "<device id>";      // Device you want to post to
 char streamName[] = "<stream name>";  // Stream you want to post to
