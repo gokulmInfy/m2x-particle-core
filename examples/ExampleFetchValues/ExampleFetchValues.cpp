@@ -1,30 +1,19 @@
-#include "M2XStreamClient/M2XStreamClient.h"
+#include "M2XStreamClient.h"
 
 char deviceId[] = "<device id>";      // Device you want to post to
+char streamName[] = "<stream name>";  // Stream you want to post to
 char m2xKey[] = "<M2X access key>";   // Your M2X access key
 
 TCPClient client;
 M2XStreamClient m2xClient(&client, m2xKey);
 
-void on_location_found(const char* name,
-                       double latitude,
-                       double longitude,
-                       double elevation,
-                       const char* timestamp,
-                       int index,
-                       void* context) {
-  Serial.print("Found a location, index:");
+void on_data_point_found(const char* at, const char* value, int index, void* context, int type) {
+  Serial.print("Found a data point, index:");
   Serial.println(index);
-  Serial.print("Name: ");
-  Serial.println(name);
-  Serial.print("Latitude: ");
-  Serial.println(latitude);
-  Serial.print("Longitude: ");
-  Serial.println(longitude);
-  Serial.print("Elevation: ");
-  Serial.println(elevation);
-  Serial.print("Timestamp: ");
-  Serial.println(timestamp);
+  Serial.print("At:");
+  Serial.println(at);
+  Serial.print("Value:");
+  Serial.println(value);
 }
 
 void setup() {
@@ -40,7 +29,7 @@ void setup() {
 }
 
 void loop() {
-  int response = m2xClient.readLocation(deviceId, on_location_found, NULL);
+  int response = m2xClient.listStreamValues(deviceId, streamName, on_data_point_found, NULL);
   Serial.print("M2x client response code: ");
   Serial.println(response);
 
