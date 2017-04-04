@@ -29,7 +29,7 @@ static const int E_INVALID = -4;
 static const int E_JSON_INVALID = -5;
 
 /*
- * +type+ indicates the value type: 1 for string, 2 for number
+ * `type` indicates the value type: 1 for string, 2 for number
  * NOTE that the value type here only contains a hint on how
  * you can use the value. Even though 2 is returned, the value
  * is still stored in (const char *), and atoi/atof is needed to
@@ -61,82 +61,96 @@ public:
                   int port = kDefaultM2XPort);
 
 /**
- * Method for <a href="https://m2x.att.com/developer/documentation/v2/device#Update-Data-Stream-Value">Update Data Stream Value</a> endpoint.
+ * Method for <a href="https://m2x.att.com/developer/documentation/v2/device
+ * #Update-Data-Stream-Value">Update Data Stream Value</a> endpoint.
  * Push data stream value using PUT request, returns the HTTP status code
  * @param deviceId - id of the device to post values
  * @param streamName - Name of the stream.
- * @param value - the value.<p>
+ * @param value - the value.
  */
   template <class T>
   int updateStreamValue(const char* deviceId, const char* streamName, T value);
 
 /**
-  * Method for <a href="https://m2x.att.com/developer/documentation/v2/device#Post-Device-Update--Single-Values-to-Multiple-Streams-">Post Device Update</a> endpoint.
+  * Method for <a href="https://m2x.att.com/developer/documentation/v2/device
+  * #Post-Device-Update--Single-Values-to-Multiple-Streams-">Post Device Update</a> endpoint.
   * Post multiple values of a single device at once.
   * @param deviceId - id of the device to post values
   * @param streamNum - Number of streams to post
-  * @param names - Array of stream names, the length of the array should  be exactly +streamNum+
-  * @param values - Array of values to post, the length of the array should  be exactly +streamNum+. Notice that the array of +values+ should
-  * match the array of +names+, and that the ith value in +values+ is  exactly the value to post for the ith stream name in +names+<p>
+  * @param names - Array of stream names, the length of the array
+  * should be exactly `streamNum`
+  * @param values - Array of values to post, the length of the array
+  * should be exactly `streamNum`.
+  * Notice that the array of `values` should match the array of `names`,
+  * and that the ith value in `values` is exactly the value to post for
+  * the ith stream name in `names`.
   */
   template <class T>
   int postDeviceUpdate(const char* deviceId, int streamNum,
                        const char* names[], const char* at,
                        T values[]);
   /**
-   * Method for <a href="https://m2x.att.com/developer/documentation/v2/device#Post-Device-Updates--Multiple-Values-to-Multiple-Streams-">Post Device Updates (Multiple Values to Multiple Streams)</a> endpoint.
+   * Method for <a href="https://m2x.att.com/developer/documentation/v2/device
+   * #Post-Device-Updates--Multiple-Values-to-Multiple-Streams-">Post Device Updates
+   * (Multiple Values to Multiple Streams)</a> endpoint.
    * Post multiple values to M2X all at once.
    * @param deviceId - id of the device to post values
    * @param streamNum - Number of streams to post
-   * @param names - Array of stream names, the length of the array should be exactly +streamNum+
-   * @param counts - Array of +streamNum+ length, each item in this array containing the number of values we want to post for each stream
-   * @param ats - Timestamps for each value, the length of this array should be the some of all values in +counts+, for the first +counts[0]+
-   * items, the values belong to the first stream, for the following
-   * +counts[1]+ number of items, the values belong to the second stream,
+   * @param names - Array of stream names, the length of the array should be
+   * exactly `streamNum`
+   * @param counts - Array of `streamNum` length, each item in this array containing
+   * the number of values we want to post for each stream
+   * @param ats - Timestamps for each value, the length of this array should be the some
+   * of all values in `counts`, for the first `counts[0]` items,
+   * the values belong to the first stream, for the following
+   * `counts[1]` number of items, the values belong to the second stream,
    * etc. Notice that timestamps are required here: you must provide
    * a timestamp for each value posted.
-   * @param values - Values to post. This works the same way as +ats+, the
-   * first +counts[0]+ number of items contain values to post to the first
-   * stream, the succeeding +counts[1]+ number of items contain values
+   * @param values - Values to post. This works the same way as `ats`, the
+   * first `counts[0]` number of items contain values to post to the first
+   * stream, the succeeding `counts[1]` number of items contain values
    * for the second stream, etc. The length of this array should be
-   * the sum of all values in +counts+ array.
+   * the sum of all values in `counts` array.
    */
   template <class T>
   int postDeviceUpdates(const char* deviceId, int streamNum,
                         const char* names[], const int counts[],
                         const char* ats[], T values[]);
 
-  // Fetch values for a particular data stream. Since memory is
-  // very limited on an Arduino, we cannot parse and get all the
-  // data points in memory. Instead, we use callbacks here: whenever
-  // a new data point is parsed, we call the callback using the values,
-  // after that, the values will be thrown away to make space for new
-  // values.
-  // Note that you can also pass in a user-specified context in this
-  // function, this context will be passed to the callback function
-  // each time we get a data point.
-  // For each data point, the callback will be called once. The HTTP
-  // status code will be returned. And the content is only parsed when
-  // the status code is 200.
+ /**
+  * Fetch values for a particular data stream. Since memory is
+  * very limited on an Arduino, we cannot parse and get all the
+  * data points in memory. Instead, we use callbacks here: whenever
+  * a new data point is parsed, we call the callback using the values,
+  * after that, the values will be thrown away to make space for new values.<p>
+  * Note that you can also pass in a user-specified context in this
+  * function, this context will be passed to the callback function
+  * each time we get a data point. For each data point, the callback will be called once.
+  * The HTTP status code will be returned. And the content is only parsed when
+  * the status code is 200.
+  */
   int listStreamValues(const char* deviceId, const char* streamName,
                        stream_value_read_callback callback, void* context,
                        const char* query = NULL);
 
  /**
-  * Method for <a href="https://m2x.att.com/developer/documentation/v2/device#Update-Device-Location">Update Device Location</a> endpoint.
+  * Method for <a href="https://m2x.att.com/developer/documentation/v2/device
+  * #Update-Device-Location">Update Device Location</a> endpoint.
   * Update datasource location
   * @param deviceId - id of the device.
   * @param name - a name identifying this location
   * @param latitude - latitude
   * @param longitude - longitude
   * @param elevation - elevation <p>
-  * NOTE: On an Arduino Uno and other ATMEGA based boards, double has  4-byte (32 bits) precision,
-  * which is the same as float. So there's  no natural double-precision floating number on these boards.
-  * With  a float value, we have a precision of roughly 7 digits, that means  either 5 or 6 digits after the floating point.
-  * According to wikipedia,  a difference of 0.00001 will give us ~1.1132m distance.
-  * If this  precision is good for you, you can use the double-version we provided  here.
-  * Otherwise, you may need to use the string-version and do the  actual conversion by yourselves.
-  * However, with an Arduino Due board, double has 8-bytes (64 bits)  precision,
+  * NOTE: On an Arduino Uno and other ATMEGA based boards, double has
+  * 4-byte (32 bits) precision, which is the same as float.
+  * So there's no natural double-precision floating number on these boards.
+  * With  a float value, we have a precision of roughly 7 digits, that means
+  * either 5 or 6 digits after the floating point.
+  * According to wikipedia, a difference of 0.00001 will give us ~1.1132m distance.
+  * If this precision is good for you, you can use the double-version we provided here.
+  * Otherwise, you may need to use the string-version and do the actual conversion by yourselves.
+  * However, with an Arduino Due board, double has 8-bytes (64 bits) precision,
   * which means you are free to use the double-version only without any precision problems.
   * Returned value is the http status code.
   */
@@ -144,14 +158,17 @@ public:
   int updateLocation(const char* deviceId, const char* name,
                      T latitude, T longitude, T elevation);
 
-  // Read location information for a device. Also used callback to process
-  // data points for memory reasons. The HTTP status code is returned,
-  // response is only parsed when the HTTP status code is 200
+/**
+ * Read location information for a device. Also used callback to process
+ * data points for memory reasons. The HTTP status code is returned,
+ * response is only parsed when the HTTP status code is 200
+ */
   int readLocation(const char* deviceId, location_read_callback callback,
                    void* context);
 
 /**
- * Method for <a href="https://m2x.att.com/developer/documentation/v2/device#Delete-Data-Stream-Values">Delete Data Stream Values</a> endpoint.
+ * Method for <a href="https://m2x.att.com/developer/documentation/v2/
+ * device#Delete-Data-Stream-Values">Delete Data Stream Values</a> endpoint.
  * Delete values from a data stream
  * @param deviceId - id of the device to post values<p>
  * You will need to provide from and end date/time strings in the ISO8601
@@ -162,8 +179,10 @@ public:
  *     HH: the hour (24 hour format)
  *     MM: the minute
  *     SS.SSS: the seconds (to the millisecond)<p>
- * NOTE: the time is given in Zulu (GMT) M2X will delete all values within the from to end date/time range.
- * The status code is 204 on success and 400 on a bad request (e.g. the timestamp is not in ISO8601 format or the from timestamp is not less than
+ * NOTE: the time is given in Zulu (GMT) M2X will delete all values within the
+ * from to end date/time range.
+ * The status code is 204 on success and 400 on a bad request (e.g. the timestamp
+ * is not in ISO8601 format or the from timestamp is not less than
  * or equal to the end timestamp.
  */
   int deleteValues(const char* deviceId, const char* streamName,
@@ -220,7 +239,8 @@ private:
    */
   int waitForString(const char* str);
 
-  /** Closes the connection
+  /**
+   * Closes the connection
    */
   void close();
   // Parses JSON response of stream value API, and calls callback function
